@@ -1,0 +1,14 @@
+@-moz-document url("chrome://browser/content/browser.xul") {
+	#cui_foxspeak {
+		list-style-image: url('chrome://foxspeak/content/resources/images/gray16.png');
+		/*filter: grayscale(1);
+		transition: filter 200ms;*/
+	}
+	#cui_foxspeak:hover {
+		filter: grayscale(0);
+	}
+	#cui_foxspeak[cui-areatype="menu-panel"],
+	toolbarpaletteitem[place="palette"] > #cui_foxspeak {
+		list-style-image: url('chrome://foxspeak/content/resources/images/gray32.png');
+	}
+}
