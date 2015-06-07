@@ -1,0 +1,2470 @@
+Function no. : 1
+static int
+
+acmod_init_am(acmod_t *acmod)
+
+Function no. : 2
+static int
+
+acmod_init_feat(acmod_t *acmod)
+
+Function no. : 3
+int
+
+acmod_fe_mismatch(acmod_t *acmod, fe_t *fe)
+
+Function no. : 4
+int
+
+acmod_feat_mismatch(acmod_t *acmod, feat_t *fcb)
+
+Function no. : 5
+acmod_t *
+
+acmod_init(cmd_ln_t *config, logmath_t *lmath, fe_t *fe, feat_t *fcb)
+
+Function no. : 6
+void
+
+acmod_free(acmod_t *acmod)
+
+Function no. : 7
+ps_mllr_t *
+
+acmod_update_mllr(acmod_t *acmod, ps_mllr_t *mllr)
+
+Function no. : 8
+int
+
+acmod_write_senfh_header(acmod_t *acmod, FILE *logfh)
+
+Function no. : 9
+int
+
+acmod_set_senfh(acmod_t *acmod, FILE *logfh)
+
+Function no. : 10
+int
+
+acmod_set_mfcfh(acmod_t *acmod, FILE *logfh)
+
+Function no. : 11
+int
+
+acmod_set_rawfh(acmod_t *acmod, FILE *logfh)
+
+Function no. : 12
+void
+
+acmod_grow_feat_buf(acmod_t *acmod, int nfr)
+
+Function no. : 13
+int
+
+acmod_set_grow(acmod_t *acmod, int grow_feat)
+
+Function no. : 14
+int
+
+acmod_start_utt(acmod_t *acmod)
+
+Function no. : 15
+int
+
+acmod_end_utt(acmod_t *acmod)
+
+Function no. : 16
+acmod_log_mfc(acmod_t *acmod,
+
+              mfcc_t **cep, int n_frames)
+
+Function no. : 17
+                       mfcc_t ***inout_cep,
+
+                       int *inout_n_frames)
+
+Function no. : 18
+                       int16 const **inout_raw,
+
+                       size_t *inout_n_samps)
+
+Function no. : 19
+static int32
+
+acmod_process_mfcbuf(acmod_t *acmod)
+
+Function no. : 20
+		  size_t *inout_n_samps,
+
+		  int full_utt)
+
+Function no. : 21
+		  int *inout_n_frames,
+
+		  int full_utt)
+
+Function no. : 22
+acmod_process_feat(acmod_t *acmod,
+
+		   mfcc_t **feat)
+
+Function no. : 23
+static int
+
+acmod_read_senfh_header(acmod_t *acmod)
+
+Function no. : 24
+int
+
+acmod_set_insenfh(acmod_t *acmod, FILE *senfh)
+
+Function no. : 25
+int
+
+acmod_rewind(acmod_t *acmod)
+
+Function no. : 26
+int
+
+acmod_advance(acmod_t *acmod)
+
+Function no. : 27
+acmod_write_scores(acmod_t *acmod, int n_active, uint8 const *active,
+
+                   int16 const *senscr, FILE *senfh)
+
+Function no. : 28
+static int
+
+acmod_read_scores_internal(acmod_t *acmod)
+
+Function no. : 29
+int
+
+acmod_read_scores(acmod_t *acmod)
+
+Function no. : 30
+static int
+
+calc_frame_idx(acmod_t *acmod, int *inout_frame_idx)
+
+Function no. : 31
+static int
+
+calc_feat_idx(acmod_t *acmod, int frame_idx)
+
+Function no. : 32
+mfcc_t **
+
+acmod_get_frame(acmod_t *acmod, int *inout_frame_idx)
+
+Function no. : 33
+int16 const *
+
+acmod_score(acmod_t *acmod, int *inout_frame_idx)
+
+Function no. : 34
+int
+
+acmod_best_score(acmod_t *acmod, int *out_best_senid)
+
+Function no. : 35
+void
+
+acmod_clear_active(acmod_t *acmod)
+
+Function no. : 36
+void
+
+acmod_activate_hmm(acmod_t *acmod, hmm_t *hmm)
+
+Function no. : 37
+int32
+
+acmod_flags2list(acmod_t *acmod)
+
+Function no. : 38
+bin_mdef_t *
+
+bin_mdef_read_text(cmd_ln_t *config, const char *filename)
+
+Function no. : 39
+bin_mdef_t *
+
+bin_mdef_retain(bin_mdef_t *m)
+
+Function no. : 40
+int
+
+bin_mdef_free(bin_mdef_t * m)
+
+Function no. : 41
+bin_mdef_t *
+
+bin_mdef_read(cmd_ln_t *config, const char *filename)
+
+Function no. : 42
+int
+
+bin_mdef_write(bin_mdef_t * m, const char *filename)
+
+Function no. : 43
+int
+
+bin_mdef_write_text(bin_mdef_t * m, const char *filename)
+
+Function no. : 44
+int
+
+bin_mdef_ciphone_id(bin_mdef_t * m, const char *ciphone)
+
+Function no. : 45
+int
+
+bin_mdef_ciphone_id_nocase(bin_mdef_t * m, const char *ciphone)
+
+Function no. : 46
+const char *
+
+bin_mdef_ciphone_str(bin_mdef_t * m, int32 ci)
+
+Function no. : 47
+int
+
+bin_mdef_phone_id(bin_mdef_t * m, int32 ci, int32 lc, int32 rc, int32 wpos)
+
+Function no. : 48
+int
+
+bin_mdef_phone_id_nearest(bin_mdef_t * m, int32 b, int32 l, int32 r, int32 pos)
+
+Function no. : 49
+int
+
+bin_mdef_phone_str(bin_mdef_t * m, int pid, char *buf)
+
+Function no. : 50
+blkarray_list_t *
+
+_blkarray_list_init(int32 maxblks, int32 blksize)
+
+Function no. : 51
+blkarray_list_t *
+
+blkarray_list_init(void)
+
+Function no. : 52
+void
+
+blkarray_list_free(blkarray_list_t *bl)
+
+Function no. : 53
+int32
+
+blkarray_list_append(blkarray_list_t * bl, void *data)
+
+Function no. : 54
+void
+
+blkarray_list_reset(blkarray_list_t * bl)
+
+Function no. : 55
+compress_table(s3ssid_t * uncomp_tab, s3ssid_t * com_tab,
+
+               s3cipid_t * ci_map, int32 n_ci)
+
+Function no. : 56
+compress_right_context_tree(dict2pid_t * d2p,
+
+                            s3ssid_t ***rdiph_rc)
+
+Function no. : 57
+static void
+
+compress_left_right_context_tree(dict2pid_t * d2p)
+
+Function no. : 58
+int32
+
+get_rc_nssid(dict2pid_t * d2p, s3wid_t w)
+
+Function no. : 59
+s3cipid_t *
+
+dict2pid_get_rcmap(dict2pid_t * d2p, s3wid_t w)
+
+Function no. : 60
+static void
+
+free_compress_map(xwdssid_t ** tree, int32 n_ci)
+
+Function no. : 61
+static void
+
+populate_lrdiph(dict2pid_t *d2p, s3ssid_t ***rdiph_rc, s3cipid_t b)
+
+Function no. : 62
+dict2pid_add_word(dict2pid_t *d2p,
+
+                  int32 wid)
+
+Function no. : 63
+                  int32 wid,
+
+                  int pos)
+
+Function no. : 64
+dict2pid_t *
+
+dict2pid_build(bin_mdef_t * mdef, dict_t * dict)
+
+Function no. : 65
+dict2pid_t *
+
+dict2pid_retain(dict2pid_t *d2p)
+
+Function no. : 66
+int
+
+dict2pid_free(dict2pid_t * d2p)
+
+Function no. : 67
+void
+
+dict2pid_report(dict2pid_t * d2p)
+
+Function no. : 68
+void
+
+dict2pid_dump(FILE * fp, dict2pid_t * d2p)
+
+Function no. : 69
+static s3cipid_t
+
+dict_ciphone_id(dict_t * d, const char *str)
+
+Function no. : 70
+const char *
+
+dict_ciphone_str(dict_t * d, s3wid_t wid, int32 pos)
+
+Function no. : 71
+s3wid_t
+
+dict_add_word(dict_t * d, char const *word, s3cipid_t const * p, int32 np)
+
+Function no. : 72
+static int32
+
+dict_read(FILE * fp, dict_t * d)
+
+Function no. : 73
+int
+
+dict_write(dict_t *dict, char const *filename, char const *format)
+
+Function no. : 74
+dict_t *
+
+dict_init(cmd_ln_t *config, bin_mdef_t * mdef)
+
+Function no. : 75
+s3wid_t
+
+dict_wordid(dict_t *d, const char *word)
+
+Function no. : 76
+int
+
+dict_filler_word(dict_t *d, s3wid_t w)
+
+Function no. : 77
+int
+
+dict_real_word(dict_t *d, s3wid_t w)
+
+Function no. : 78
+int32
+
+dict_word2basestr(char *word)
+
+Function no. : 79
+dict_t *
+
+dict_retain(dict_t *d)
+
+Function no. : 80
+int
+
+dict_free(dict_t * d)
+
+Function no. : 81
+void
+
+dict_report(dict_t * d)
+
+Function no. : 82
+fsg_history_t *
+
+fsg_history_init(fsg_model_t * fsg, dict_t *dict)
+
+Function no. : 83
+void
+
+fsg_history_free(fsg_history_t *h)
+
+Function no. : 84
+void
+
+fsg_history_set_fsg(fsg_history_t *h, fsg_model_t *fsg, dict_t *dict)
+
+Function no. : 85
+                      int32 frame, int32 score, int32 pred,
+
+                      int32 lc, fsg_pnode_ctxt_t rc)
+
+Function no. : 86
+void
+
+fsg_history_end_frame(fsg_history_t * h)
+
+Function no. : 87
+fsg_hist_entry_t *
+
+fsg_history_entry_get(fsg_history_t * h, int32 id)
+
+Function no. : 88
+void
+
+fsg_history_reset(fsg_history_t * h)
+
+Function no. : 89
+int32
+
+fsg_history_n_entries(fsg_history_t * h)
+
+Function no. : 90
+void
+
+fsg_history_utt_start(fsg_history_t * h)
+
+Function no. : 91
+void
+
+fsg_history_utt_end(fsg_history_t * h)
+
+Function no. : 92
+void
+
+fsg_history_print(fsg_history_t *h, dict_t *dict) 
+
+Function no. : 93
+static void
+
+fsg_lextree_lc_rc(fsg_lextree_t *lextree)
+
+Function no. : 94
+                 bin_mdef_t *mdef, hmm_context_t *ctx,
+
+                 int32 wip, int32 pip)
+
+Function no. : 95
+void
+
+fsg_lextree_dump(fsg_lextree_t * lextree, FILE * fp)
+
+Function no. : 96
+void
+
+fsg_lextree_free(fsg_lextree_t * lextree)
+
+Function no. : 97
+
+
+void fsg_glist_linklist_free(fsg_glist_linklist_t *glist)
+
+Function no. : 98
+void
+
+fsg_pnode_add_all_ctxt(fsg_pnode_ctxt_t * ctxt)
+
+Function no. : 99
+
+
+uint32 fsg_pnode_ctxt_sub_generic(fsg_pnode_ctxt_t *src, fsg_pnode_ctxt_t *sub)
+
+Function no. : 100
+                   int16 *lclist, int16 *rclist,
+
+                   fsg_pnode_t ** alloc_head)
+
+Function no. : 101
+                  fsg_model_t * fsg, int32 from_state,
+
+                  fsg_pnode_t ** alloc_head)
+
+Function no. : 102
+static void
+
+fsg_psubtree_free(fsg_pnode_t * head)
+
+Function no. : 103
+void 
+
+fsg_psubtree_dump(fsg_lextree_t *tree, fsg_pnode_t *root, FILE * fp)
+
+Function no. : 104
+void
+
+fsg_psubtree_pnode_deactivate(fsg_pnode_t * pnode)
+
+Function no. : 105
+                dict_t *dict,
+
+                dict2pid_t *d2p)
+
+Function no. : 106
+void
+
+fsg_search_free(ps_search_t *search)
+
+Function no. : 107
+int
+
+fsg_search_reinit(ps_search_t *search, dict_t *dict, dict2pid_t *d2p)
+
+Function no. : 108
+static int
+
+fsg_search_add_silences(fsg_search_t *fsgs, fsg_model_t *fsg)
+
+Function no. : 109
+static int
+
+fsg_search_check_dict(fsg_search_t *fsgs, fsg_model_t *fsg)
+
+Function no. : 110
+static int
+
+fsg_search_add_altpron(fsg_search_t *fsgs, fsg_model_t *fsg)
+
+Function no. : 111
+fsg_model_t *
+
+fsg_set_get_fsg(fsg_search_t *fsgs, const char *name)
+
+Function no. : 112
+fsg_model_t *
+
+fsg_set_add(fsg_search_t *fsgs, char const *name, fsg_model_t *fsg)
+
+Function no. : 113
+fsg_model_t *
+
+fsg_set_remove_byname(fsg_search_t *fsgs, char const *key)
+
+Function no. : 114
+fsg_model_t *
+
+fsg_set_remove(fsg_search_t *fsgs, fsg_model_t *fsg)
+
+Function no. : 115
+fsg_model_t *
+
+fsg_set_select(fsg_search_t *fsgs, const char *name)
+
+Function no. : 116
+fsg_set_iter_t *
+
+fsg_set_iter(fsg_set_t *fsgs)
+
+Function no. : 117
+fsg_set_iter_t *
+
+fsg_set_iter_next(fsg_set_iter_t *itor)
+
+Function no. : 118
+fsg_model_t *
+
+fsg_set_iter_fsg(fsg_set_iter_t *itor)
+
+Function no. : 119
+void
+
+fsg_set_iter_free(fsg_set_iter_t *itor)
+
+Function no. : 120
+static void
+
+fsg_search_sen_active(fsg_search_t *fsgs)
+
+Function no. : 121
+static void
+
+fsg_search_hmm_eval(fsg_search_t *fsgs)
+
+Function no. : 122
+static void
+
+fsg_search_pnode_trans(fsg_search_t *fsgs, fsg_pnode_t * pnode)
+
+Function no. : 123
+static void
+
+fsg_search_pnode_exit(fsg_search_t *fsgs, fsg_pnode_t * pnode)
+
+Function no. : 124
+static void
+
+fsg_search_hmm_prune_prop(fsg_search_t *fsgs)
+
+Function no. : 125
+static void
+
+fsg_search_null_prop(fsg_search_t *fsgs)
+
+Function no. : 126
+static void
+
+fsg_search_word_trans(fsg_search_t *fsgs)
+
+Function no. : 127
+int
+
+fsg_search_step(ps_search_t *search, int frame_idx)
+
+Function no. : 128
+int
+
+fsg_search_start(ps_search_t *search)
+
+Function no. : 129
+int
+
+fsg_search_finish(ps_search_t *search)
+
+Function no. : 130
+static int
+
+fsg_search_find_exit(fsg_search_t *fsgs, int frame_idx, int final, int32 *out_score, int32* out_is_final)
+
+Function no. : 131
+static ps_latlink_t *
+
+fsg_search_bestpath(ps_search_t *search, int32 *out_score, int backward)
+
+Function no. : 132
+char const *
+
+fsg_search_hyp(ps_search_t *search, int32 *out_score, int32 *out_is_final)
+
+Function no. : 133
+static void
+
+fsg_seg_bp2itor(ps_seg_t *seg, fsg_hist_entry_t *hist_entry)
+
+Function no. : 134
+static void
+
+fsg_seg_free(ps_seg_t *seg)
+
+Function no. : 135
+static ps_seg_t *
+
+fsg_seg_next(ps_seg_t *seg)
+
+Function no. : 136
+static ps_seg_t *
+
+fsg_search_seg_iter(ps_search_t *search, int32 *out_score)
+
+Function no. : 137
+static int
+
+fsg_search_prob(ps_search_t *search)
+
+Function no. : 138
+static ps_latnode_t *
+
+find_node(ps_lattice_t *dag, fsg_model_t *fsg, int sf, int32 wid, int32 node_id)
+
+Function no. : 139
+static ps_latnode_t *
+
+new_node(ps_lattice_t *dag, fsg_model_t *fsg, int sf, int ef, int32 wid, int32 node_id, int32 ascr)
+
+Function no. : 140
+static ps_latnode_t *
+
+find_start_node_one(fsg_search_t *fsgs, ps_lattice_t *dag)
+
+Function no. : 141
+static ps_latnode_t *
+
+find_end_node_one(fsg_search_t *fsgs, ps_lattice_t *dag)
+
+Function no. : 142
+static void
+
+mark_reachable(ps_lattice_t *dag, ps_latnode_t *end)
+
+Function no. : 143
+static ps_lattice_t *
+
+fsg_search_lattice(ps_search_t *search)
+
+Function no. : 144
+		 int16 const *senscore,
+
+		 uint16 * const *sseq)
+
+Function no. : 145
+void
+
+hmm_context_free(hmm_context_t *ctx)
+
+Function no. : 146
+void
+
+hmm_init(hmm_context_t *ctx, hmm_t *hmm, int mpx, int ssid, int tmatid)
+
+Function no. : 147
+void
+
+hmm_deinit(hmm_t *hmm)
+
+Function no. : 148
+hmm_dump(hmm_t * hmm,
+
+         FILE * fp)
+
+Function no. : 149
+void
+
+hmm_clear_scores(hmm_t * h)
+
+Function no. : 150
+void
+
+hmm_clear(hmm_t * h)
+
+Function no. : 151
+void
+
+hmm_enter(hmm_t *h, int32 score, int32 histid, int frame)
+
+Function no. : 152
+void
+
+hmm_normalize(hmm_t *h, int32 bestscr)
+
+Function no. : 153
+static int32
+
+hmm_vit_eval_5st_lr(hmm_t * hmm)
+
+Function no. : 154
+static int32
+
+hmm_vit_eval_5st_lr_mpx(hmm_t * hmm)
+
+Function no. : 155
+static int32
+
+hmm_vit_eval_3st_lr(hmm_t * hmm)
+
+Function no. : 156
+static int32
+
+hmm_vit_eval_3st_lr_mpx(hmm_t * hmm)
+
+Function no. : 157
+static int32
+
+hmm_vit_eval_anytopo(hmm_t * hmm)
+
+Function no. : 158
+int32
+
+hmm_vit_eval(hmm_t * hmm)
+
+Function no. : 159
+int32
+
+hmm_dump_vit_eval(hmm_t * hmm, FILE * fp)
+
+Function no. : 160
+static void
+
+ciphone_add(mdef_t * m, char *ci, int p)
+
+Function no. : 161
+static ph_lc_t *
+
+find_ph_lc(ph_lc_t * lclist, int lc)
+
+Function no. : 162
+static ph_rc_t *
+
+find_ph_rc(ph_rc_t * rclist, int rc)
+
+Function no. : 163
+             int ci, int lc, int rc, word_posn_t wpos,
+
+             int p)
+
+Function no. : 164
+int
+
+mdef_ciphone_id(mdef_t * m, char *ci)
+
+Function no. : 165
+const char *
+
+mdef_ciphone_str(mdef_t * m, int id)
+
+Function no. : 166
+int
+
+mdef_phone_str(mdef_t * m, int pid, char *buf)
+
+Function no. : 167
+mdef_phone_id(mdef_t * m,
+
+              int ci, int lc, int rc, word_posn_t wpos)
+
+Function no. : 168
+int
+
+mdef_is_ciphone(mdef_t * m, int p)
+
+Function no. : 169
+int
+
+mdef_is_cisenone(mdef_t * m, int s)
+
+Function no. : 170
+static void
+
+parse_tmat_senmap(mdef_t * m, char *line, int32 off, int p)
+
+Function no. : 171
+static void
+
+parse_base_line(mdef_t * m, char *line, int p)
+
+Function no. : 172
+static void
+
+parse_tri_line(mdef_t * m, char *line, int p)
+
+Function no. : 173
+static void
+
+sseq_compress(mdef_t * m)
+
+Function no. : 174
+static int32
+
+noncomment_line(char *line, int32 size, FILE * fp)
+
+Function no. : 175
+mdef_t *
+
+mdef_init(char *mdeffile, int32 breport)
+
+Function no. : 176
+void
+
+mdef_report(mdef_t * m)
+
+Function no. : 177
+void
+
+mdef_free_recursive_lc(ph_lc_t * lc)
+
+Function no. : 178
+void
+
+mdef_free_recursive_rc(ph_rc_t * rc)
+
+Function no. : 179
+void
+
+mdef_free(mdef_t * m)
+
+Function no. : 180
+void
+
+gauden_dump(const gauden_t * g)
+
+Function no. : 181
+void
+
+gauden_dump_ind(const gauden_t * g, int senidx)
+
+Function no. : 182
+                  int32 * out_n_density,
+
+                  int32 ** out_veclen, const char *file_name)
+
+Function no. : 183
+static void
+
+gauden_param_free(mfcc_t **** p)
+
+Function no. : 184
+static int32
+
+gauden_dist_precompute(gauden_t * g, logmath_t *lmath, float32 varfloor)
+
+Function no. : 185
+gauden_t *
+
+gauden_init(char const *meanfile, char const *varfile, float32 varfloor, logmath_t *lmath)
+
+Function no. : 186
+void
+
+gauden_free(gauden_t * g)
+
+Function no. : 187
+                 mfcc_t ** mean, mfcc_t ** var, mfcc_t * det,
+
+                 int32 n_density)
+
+Function no. : 188
+             mfcc_t ** mean, mfcc_t ** var, mfcc_t * det,
+
+             int32 n_density)
+
+Function no. : 189
+gauden_dist(gauden_t * g,
+
+            int mgau, int32 n_top, mfcc_t** obs, gauden_dist_t ** out_dist)
+
+Function no. : 190
+int32
+
+gauden_mllr_transform(gauden_t *g, ps_mllr_t *mllr, cmd_ln_t *config)
+
+Function no. : 191
+ps_mgau_t *
+
+ms_mgau_init(acmod_t *acmod, logmath_t *lmath, bin_mdef_t *mdef)
+
+Function no. : 192
+void
+
+ms_mgau_free(ps_mgau_t * mg)
+
+Function no. : 193
+ms_mgau_mllr_transform(ps_mgau_t *s,
+
+		       ps_mllr_t *mllr)
+
+Function no. : 194
+			int32 frame,
+
+			int32 compallsen)
+
+Function no. : 195
+static int32
+
+senone_mgau_map_read(senone_t * s, char const *file_name)
+
+Function no. : 196
+static int32
+
+senone_mixw_read(senone_t * s, char const *file_name, logmath_t *lmath)
+
+Function no. : 197
+senone_init(gauden_t *g, char const *mixwfile, char const *sen2mgau_map_file,
+
+	    float32 mixwfloor, logmath_t *lmath, bin_mdef_t *mdef)
+
+Function no. : 198
+void
+
+senone_free(senone_t * s)
+
+Function no. : 199
+int32
+
+senone_eval(senone_t * s, int id, gauden_dist_t ** dist, int32 n_top)
+
+Function no. : 200
+static void
+
+ngram_search_update_widmap(ngram_search_t *ngs)
+
+Function no. : 201
+static void
+
+ngram_search_calc_beams(ngram_search_t *ngs)
+
+Function no. : 202
+		  dict_t *dict,
+
+                  dict2pid_t *d2p)
+
+Function no. : 203
+static int
+
+ngram_search_reinit(ps_search_t *search, dict_t *dict, dict2pid_t *d2p)
+
+Function no. : 204
+void
+
+ngram_search_free(ps_search_t *search)
+
+Function no. : 205
+int
+
+ngram_search_mark_bptable(ngram_search_t *ngs, int frame_idx)
+
+Function no. : 206
+static void
+
+set_real_wid(ngram_search_t *ngs, int32 bp)
+
+Function no. : 207
+ngram_search_save_bp(ngram_search_t *ngs, int frame_idx,
+
+                     int32 w, int32 score, int32 path, int32 rc)
+
+Function no. : 208
+int
+
+ngram_search_find_exit(ngram_search_t *ngs, int frame_idx, int32 *out_best_score, int32 *out_is_final)
+
+Function no. : 209
+char const *
+
+ngram_search_bp_hyp(ngram_search_t *ngs, int bpidx)
+
+Function no. : 210
+void
+
+ngram_search_alloc_all_rc(ngram_search_t *ngs, int32 w)
+
+Function no. : 211
+void
+
+ngram_search_free_all_rc(ngram_search_t *ngs, int32 w)
+
+Function no. : 212
+int32
+
+ngram_search_exit_score(ngram_search_t *ngs, bptbl_t *pbe, int rcphone)
+
+Function no. : 213
+ngram_compute_seg_score(ngram_search_t *ngs, bptbl_t *be, float32 lwf,
+
+                        int32 *out_ascr, int32 *out_lscr)
+
+Function no. : 214
+static int
+
+ngram_search_start(ps_search_t *search)
+
+Function no. : 215
+static int
+
+ngram_search_step(ps_search_t *search, int frame_idx)
+
+Function no. : 216
+void
+
+dump_bptable(ngram_search_t *ngs)
+
+Function no. : 217
+static int
+
+ngram_search_finish(ps_search_t *search)
+
+Function no. : 218
+static ps_latlink_t *
+
+ngram_search_bestpath(ps_search_t *search, int32 *out_score, int backward)
+
+Function no. : 219
+static char const *
+
+ngram_search_hyp(ps_search_t *search, int32 *out_score, int32 *out_is_final)
+
+Function no. : 220
+static void
+
+ngram_search_bp2itor(ps_seg_t *seg, int bp)
+
+Function no. : 221
+static void
+
+ngram_bp_seg_free(ps_seg_t *seg)
+
+Function no. : 222
+static ps_seg_t *
+
+ngram_bp_seg_next(ps_seg_t *seg)
+
+Function no. : 223
+static ps_seg_t *
+
+ngram_search_bp_iter(ngram_search_t *ngs, int bpidx, float32 lwf)
+
+Function no. : 224
+static ps_seg_t *
+
+ngram_search_seg_iter(ps_search_t *search, int32 *out_score)
+
+Function no. : 225
+static int32
+
+ngram_search_prob(ps_search_t *search)
+
+Function no. : 226
+static void
+
+create_dag_nodes(ngram_search_t *ngs, ps_lattice_t *dag)
+
+Function no. : 227
+static ps_latnode_t * 
+
+find_start_node_two(ngram_search_t *ngs, ps_lattice_t *dag)
+
+Function no. : 228
+
+
+static ps_latnode_t * find_end_node_two(ngram_search_t *ngs, ps_lattice_t *dag, float32 lwf)
+
+Function no. : 229
+ps_lattice_t *
+
+ngram_search_lattice(ps_search_t *search)
+
+Function no. : 230
+static void
+
+ngram_fwdflat_expand_all(ngram_search_t *ngs)
+
+Function no. : 231
+static void
+
+ngram_fwdflat_allocate_1ph(ngram_search_t *ngs)
+
+Function no. : 232
+static void
+
+ngram_fwdflat_free_1ph(ngram_search_t *ngs)
+
+Function no. : 233
+void
+
+ngram_fwdflat_init(ngram_search_t *ngs)
+
+Function no. : 234
+void
+
+ngram_fwdflat_deinit(ngram_search_t *ngs)
+
+Function no. : 235
+int
+
+ngram_fwdflat_reinit(ngram_search_t *ngs)
+
+Function no. : 236
+static void
+
+build_fwdflat_wordlist(ngram_search_t *ngs)
+
+Function no. : 237
+static void
+
+build_fwdflat_chan(ngram_search_t *ngs)
+
+Function no. : 238
+void
+
+ngram_fwdflat_start(ngram_search_t *ngs)
+
+Function no. : 239
+static void
+
+compute_fwdflat_sen_active(ngram_search_t *ngs, int frame_idx)
+
+Function no. : 240
+static void
+
+fwdflat_eval_chan(ngram_search_t *ngs, int frame_idx)
+
+Function no. : 241
+static void
+
+fwdflat_prune_chan(ngram_search_t *ngs, int frame_idx)
+
+Function no. : 242
+static void
+
+get_expand_wordlist(ngram_search_t *ngs, int32 frm, int32 win)
+
+Function no. : 243
+static void
+
+fwdflat_word_transition(ngram_search_t *ngs, int frame_idx)
+
+Function no. : 244
+static void
+
+fwdflat_renormalize_scores(ngram_search_t *ngs, int frame_idx, int32 norm)
+
+Function no. : 245
+int
+
+ngram_fwdflat_search(ngram_search_t *ngs, int frame_idx)
+
+Function no. : 246
+static void
+
+destroy_fwdflat_wordlist(ngram_search_t *ngs)
+
+Function no. : 247
+static void
+
+destroy_fwdflat_chan(ngram_search_t *ngs)
+
+Function no. : 248
+void
+
+ngram_fwdflat_finish(ngram_search_t *ngs)
+
+Function no. : 249
+static void
+
+init_search_tree(ngram_search_t *ngs)
+
+Function no. : 250
+static void
+
+init_nonroot_chan(ngram_search_t *ngs, chan_t * hmm, int32 ph, int32 ci, int32 tmatid)
+
+Function no. : 251
+static void
+
+create_search_tree(ngram_search_t *ngs)
+
+Function no. : 252
+static void
+
+reinit_search_subtree(ngram_search_t *ngs, chan_t * hmm)
+
+Function no. : 253
+static void
+
+reinit_search_tree(ngram_search_t *ngs)
+
+Function no. : 254
+void
+
+ngram_fwdtree_init(ngram_search_t *ngs)
+
+Function no. : 255
+static void
+
+deinit_search_tree(ngram_search_t *ngs)
+
+Function no. : 256
+void
+
+ngram_fwdtree_deinit(ngram_search_t *ngs)
+
+Function no. : 257
+int
+
+ngram_fwdtree_reinit(ngram_search_t *ngs)
+
+Function no. : 258
+void
+
+ngram_fwdtree_start(ngram_search_t *ngs)
+
+Function no. : 259
+static void
+
+compute_sen_active(ngram_search_t *ngs, int frame_idx)
+
+Function no. : 260
+static void
+
+renormalize_scores(ngram_search_t *ngs, int frame_idx, int32 norm)
+
+Function no. : 261
+static int32
+
+eval_root_chan(ngram_search_t *ngs, int frame_idx)
+
+Function no. : 262
+static int32
+
+eval_nonroot_chan(ngram_search_t *ngs, int frame_idx)
+
+Function no. : 263
+static int32
+
+eval_word_chan(ngram_search_t *ngs, int frame_idx)
+
+Function no. : 264
+static int32
+
+evaluate_channels(ngram_search_t *ngs, int16 const *senone_scores, int frame_idx)
+
+Function no. : 265
+static void
+
+prune_root_chan(ngram_search_t *ngs, int frame_idx)
+
+Function no. : 266
+static void
+
+prune_nonroot_chan(ngram_search_t *ngs, int frame_idx)
+
+Function no. : 267
+static void
+
+last_phone_transition(ngram_search_t *ngs, int frame_idx)
+
+Function no. : 268
+static void
+
+prune_word_chan(ngram_search_t *ngs, int frame_idx)
+
+Function no. : 269
+static void
+
+prune_channels(ngram_search_t *ngs, int frame_idx)
+
+Function no. : 270
+static void
+
+bptable_maxwpf(ngram_search_t *ngs, int frame_idx)
+
+Function no. : 271
+static void
+
+word_transition(ngram_search_t *ngs, int frame_idx)
+
+Function no. : 272
+static void
+
+deactivate_channels(ngram_search_t *ngs, int frame_idx)
+
+Function no. : 273
+int
+
+ngram_fwdtree_search(ngram_search_t *ngs, int frame_idx)
+
+Function no. : 274
+void
+
+ngram_fwdtree_finish(ngram_search_t *ngs)
+
+Function no. : 275
+static int
+
+phone_loop_search_reinit(ps_search_t *search, dict_t *dict, dict2pid_t *d2p)
+
+Function no. : 276
+		       acmod_t *acmod,
+
+		       dict_t *dict)
+
+Function no. : 277
+static void
+
+phone_loop_search_free_renorm(phone_loop_search_t *pls)
+
+Function no. : 278
+static void
+
+phone_loop_search_free(ps_search_t *search)
+
+Function no. : 279
+static int
+
+phone_loop_search_start(ps_search_t *search)
+
+Function no. : 280
+static void
+
+renormalize_hmms_one(phone_loop_search_t *pls, int frame_idx, int32 norm)
+
+Function no. : 281
+static int32
+
+evaluate_hmms_one(phone_loop_search_t *pls, int16 const *senscr, int frame_idx)
+
+Function no. : 282
+static void
+
+prune_hmms_one(phone_loop_search_t *pls, int frame_idx)
+
+Function no. : 283
+static void
+
+phone_transition_one(phone_loop_search_t *pls, int frame_idx)
+
+Function no. : 284
+static int
+
+phone_loop_search_step(ps_search_t *search, int frame_idx)
+
+Function no. : 285
+static int
+
+phone_loop_search_finish(ps_search_t *search)
+
+Function no. : 286
+static char const *
+
+phone_loop_search_hyp(ps_search_t *search, int32 *out_score, int32 *out_is_final)
+
+Function no. : 287
+static int32
+
+phone_loop_search_prob(ps_search_t *search)
+
+Function no. : 288
+static ps_seg_t *
+
+phone_loop_search_seg_iter(ps_search_t *search, int32 *out_score)
+
+Function no. : 289
+static int
+
+file_exists(const char *path)
+
+Function no. : 290
+static int
+
+hmmdir_exists(const char *path)
+
+Function no. : 291
+ps_add_file(ps_decoder_t *ps, const char *arg,
+
+            const char *hmmdir, const char *file)
+
+Function no. : 292
+static void
+
+ps_init_defaults(ps_decoder_t *ps)
+
+Function no. : 293
+static void
+
+ps_free_searches(ps_decoder_t *ps)
+
+Function no. : 294
+static ps_search_t *
+
+ps_find_search(ps_decoder_t *ps, char const *name)
+
+Function no. : 295
+int
+
+ps_reinit(ps_decoder_t *ps, cmd_ln_t *config)
+
+Function no. : 296
+ps_decoder_t *
+
+ps_init(cmd_ln_t *config)
+
+Function no. : 297
+arg_t const *
+
+ps_args(void)
+
+Function no. : 298
+ps_decoder_t *
+
+ps_retain(ps_decoder_t *ps)
+
+Function no. : 299
+int
+
+ps_free(ps_decoder_t *ps)
+
+Function no. : 300
+char const *
+
+ps_get_uttid(ps_decoder_t *ps)
+
+Function no. : 301
+cmd_ln_t *
+
+ps_get_config(ps_decoder_t *ps)
+
+Function no. : 302
+logmath_t *
+
+ps_get_logmath(ps_decoder_t *ps)
+
+Function no. : 303
+fe_t *
+
+ps_get_fe(ps_decoder_t *ps)
+
+Function no. : 304
+feat_t *
+
+ps_get_feat(ps_decoder_t *ps)
+
+Function no. : 305
+ps_mllr_t *
+
+ps_update_mllr(ps_decoder_t *ps, ps_mllr_t *mllr)
+
+Function no. : 306
+ngram_model_t *
+
+ps_get_lmset(ps_decoder_t *ps)
+
+Function no. : 307
+ngram_model_t *
+
+ps_update_lmset(ps_decoder_t *ps, ngram_model_t *lmset)
+
+Function no. : 308
+fsg_set_t *
+
+ps_get_fsgset(ps_decoder_t *ps)
+
+Function no. : 309
+fsg_set_t *
+
+ps_update_fsgset(ps_decoder_t *ps)
+
+Function no. : 310
+ps_load_dict(ps_decoder_t *ps, char const *dictfile,
+
+             char const *fdictfile, char const *format)
+
+Function no. : 311
+ps_save_dict(ps_decoder_t *ps, char const *dictfile,
+
+             char const *format)
+
+Function no. : 312
+            char const *phones,
+
+            int update)
+
+Function no. : 313
+ps_decode_raw(ps_decoder_t *ps, FILE *rawfh,
+
+              char const *uttid, long maxsamps)
+
+Function no. : 314
+int
+
+ps_start_utt(ps_decoder_t *ps, char const *uttid)
+
+Function no. : 315
+static int
+
+ps_search_forward(ps_decoder_t *ps)
+
+Function no. : 316
+ps_decode_senscr(ps_decoder_t *ps, FILE *senfh,
+
+                 char const *uttid)
+
+Function no. : 317
+               int no_search,
+
+               int full_utt)
+
+Function no. : 318
+               int no_search,
+
+               int full_utt)
+
+Function no. : 319
+int
+
+ps_end_utt(ps_decoder_t *ps)
+
+Function no. : 320
+char const *
+
+ps_get_hyp(ps_decoder_t *ps, int32 *out_best_score, char const **out_uttid)
+
+Function no. : 321
+char const *
+
+ps_get_hyp_final(ps_decoder_t *ps, int32 *out_is_final)
+
+Function no. : 322
+int32
+
+ps_get_prob(ps_decoder_t *ps, char const **out_uttid)
+
+Function no. : 323
+ps_seg_t *
+
+ps_seg_iter(ps_decoder_t *ps, int32 *out_best_score)
+
+Function no. : 324
+ps_seg_t *
+
+ps_seg_next(ps_seg_t *seg)
+
+Function no. : 325
+char const *
+
+ps_seg_word(ps_seg_t *seg)
+
+Function no. : 326
+void
+
+ps_seg_frames(ps_seg_t *seg, int *out_sf, int *out_ef)
+
+Function no. : 327
+int32
+
+ps_seg_prob(ps_seg_t *seg, int32 *out_ascr, int32 *out_lscr, int32 *out_lback)
+
+Function no. : 328
+void
+
+ps_seg_free(ps_seg_t *seg)
+
+Function no. : 329
+ps_lattice_t *
+
+ps_get_lattice(ps_decoder_t *ps)
+
+Function no. : 330
+ps_nbest(ps_decoder_t *ps, int sf, int ef,
+
+         char const *ctx1, char const *ctx2)
+
+Function no. : 331
+void
+
+ps_nbest_free(ps_nbest_t *nbest)
+
+Function no. : 332
+ps_nbest_t *
+
+ps_nbest_next(ps_nbest_t *nbest)
+
+Function no. : 333
+char const *
+
+ps_nbest_hyp(ps_nbest_t *nbest, int32 *out_score)
+
+Function no. : 334
+ps_seg_t *
+
+ps_nbest_seg(ps_nbest_t *nbest, int32 *out_score)
+
+Function no. : 335
+int
+
+ps_get_n_frames(ps_decoder_t *ps)
+
+Function no. : 336
+ps_get_utt_time(ps_decoder_t *ps, double *out_nspeech,
+
+                double *out_ncpu, double *out_nwall)
+
+Function no. : 337
+ps_get_all_time(ps_decoder_t *ps, double *out_nspeech,
+
+                double *out_ncpu, double *out_nwall)
+
+Function no. : 338
+               cmd_ln_t *config, acmod_t *acmod, dict_t *dict,
+
+               dict2pid_t *d2p)
+
+Function no. : 339
+ps_search_base_reinit(ps_search_t *search, dict_t *dict,
+
+                      dict2pid_t *d2p)
+
+Function no. : 340
+void
+
+ps_search_deinit(ps_search_t *search)
+
+Function no. : 341
+ps_alignment_t *
+
+ps_alignment_init(dict2pid_t *d2p)
+
+Function no. : 342
+int
+
+ps_alignment_free(ps_alignment_t *al)
+
+Function no. : 343
+static void *
+
+vector_grow_one(void *ptr, uint16 *n_alloc, uint16 *n, size_t item_size)
+
+Function no. : 344
+static ps_alignment_entry_t *
+
+ps_alignment_vector_grow_one(ps_alignment_vector_t *vec)
+
+Function no. : 345
+static void
+
+ps_alignment_vector_empty(ps_alignment_vector_t *vec)
+
+Function no. : 346
+ps_alignment_add_word(ps_alignment_t *al,
+
+                      int32 wid, int duration)
+
+Function no. : 347
+int
+
+ps_alignment_populate(ps_alignment_t *al)
+
+Function no. : 348
+int
+
+ps_alignment_populate_ci(ps_alignment_t *al)
+
+Function no. : 349
+int
+
+ps_alignment_propagate(ps_alignment_t *al)
+
+Function no. : 350
+int
+
+ps_alignment_n_words(ps_alignment_t *al)
+
+Function no. : 351
+int
+
+ps_alignment_n_phones(ps_alignment_t *al)
+
+Function no. : 352
+int
+
+ps_alignment_n_states(ps_alignment_t *al)
+
+Function no. : 353
+ps_alignment_iter_t *
+
+ps_alignment_words(ps_alignment_t *al)
+
+Function no. : 354
+ps_alignment_iter_t *
+
+ps_alignment_phones(ps_alignment_t *al)
+
+Function no. : 355
+ps_alignment_iter_t *
+
+ps_alignment_states(ps_alignment_t *al)
+
+Function no. : 356
+ps_alignment_entry_t *
+
+ps_alignment_iter_get(ps_alignment_iter_t *itor)
+
+Function no. : 357
+int
+
+ps_alignment_iter_free(ps_alignment_iter_t *itor)
+
+Function no. : 358
+ps_alignment_iter_t *
+
+ps_alignment_iter_goto(ps_alignment_iter_t *itor, int pos)
+
+Function no. : 359
+ps_alignment_iter_t *
+
+ps_alignment_iter_next(ps_alignment_iter_t *itor)
+
+Function no. : 360
+ps_alignment_iter_t *
+
+ps_alignment_iter_prev(ps_alignment_iter_t *itor)
+
+Function no. : 361
+ps_alignment_iter_t *
+
+ps_alignment_iter_up(ps_alignment_iter_t *itor)
+
+Function no. : 362
+ps_alignment_iter_t *
+
+ps_alignment_iter_down(ps_alignment_iter_t *itor)
+
+Function no. : 363
+ps_lattice_link(ps_lattice_t *dag, ps_latnode_t *from, ps_latnode_t *to,
+
+                int32 score, int32 ef)
+
+Function no. : 364
+void
+
+ps_lattice_bypass_fillers(ps_lattice_t *dag, int32 silpen, int32 fillpen)
+
+Function no. : 365
+static void
+
+delete_node(ps_lattice_t *dag, ps_latnode_t *node)
+
+Function no. : 366
+static void
+
+remove_dangling_links(ps_lattice_t *dag, ps_latnode_t *node)
+
+Function no. : 367
+void
+
+ps_lattice_delete_unreachable(ps_lattice_t *dag)
+
+Function no. : 368
+int32
+
+ps_lattice_write(ps_lattice_t *dag, char const *filename)
+
+Function no. : 369
+int32
+
+ps_lattice_write_htk(ps_lattice_t *dag, char const *filename)
+
+Function no. : 370
+static int
+
+dag_param_read(lineiter_t *li, char *param)
+
+Function no. : 371
+static void
+
+dag_mark_reachable(ps_latnode_t * d)
+
+Function no. : 372
+ps_lattice_read(ps_decoder_t *ps,
+
+                char const *file)
+
+Function no. : 373
+int
+
+ps_lattice_n_frames(ps_lattice_t *dag)
+
+Function no. : 374
+ps_lattice_t *
+
+ps_lattice_init_search(ps_search_t *search, int n_frame)
+
+Function no. : 375
+ps_lattice_t *
+
+ps_lattice_retain(ps_lattice_t *dag)
+
+Function no. : 376
+int
+
+ps_lattice_free(ps_lattice_t *dag)
+
+Function no. : 377
+logmath_t *
+
+ps_lattice_get_logmath(ps_lattice_t *dag)
+
+Function no. : 378
+ps_latnode_iter_t *
+
+ps_latnode_iter(ps_lattice_t *dag)
+
+Function no. : 379
+ps_latnode_iter_t *
+
+ps_latnode_iter_next(ps_latnode_iter_t *itor)
+
+Function no. : 380
+void
+
+ps_latnode_iter_free(ps_latnode_iter_t *itor)
+
+Function no. : 381
+ps_latnode_t *
+
+ps_latnode_iter_node(ps_latnode_iter_t *itor)
+
+Function no. : 382
+int
+
+ps_latnode_times(ps_latnode_t *node, int16 *out_fef, int16 *out_lef)
+
+Function no. : 383
+char const *
+
+ps_latnode_word(ps_lattice_t *dag, ps_latnode_t *node)
+
+Function no. : 384
+char const *
+
+ps_latnode_baseword(ps_lattice_t *dag, ps_latnode_t *node)
+
+Function no. : 385
+ps_latnode_prob(ps_lattice_t *dag, ps_latnode_t *node,
+
+                ps_latlink_t **out_link)
+
+Function no. : 386
+ps_latlink_iter_t *
+
+ps_latnode_exits(ps_latnode_t *node)
+
+Function no. : 387
+ps_latlink_iter_t *
+
+ps_latnode_entries(ps_latnode_t *node)
+
+Function no. : 388
+ps_latlink_iter_t *
+
+ps_latlink_iter_next(ps_latlink_iter_t *itor)
+
+Function no. : 389
+void
+
+ps_latlink_iter_free(ps_latlink_iter_t *itor)
+
+Function no. : 390
+ps_latlink_t *
+
+ps_latlink_iter_link(ps_latlink_iter_t *itor)
+
+Function no. : 391
+int
+
+ps_latlink_times(ps_latlink_t *link, int16 *out_sf)
+
+Function no. : 392
+ps_latnode_t *
+
+ps_latlink_nodes(ps_latlink_t *link, ps_latnode_t **out_src)
+
+Function no. : 393
+char const *
+
+ps_latlink_word(ps_lattice_t *dag, ps_latlink_t *link)
+
+Function no. : 394
+char const *
+
+ps_latlink_baseword(ps_lattice_t *dag, ps_latlink_t *link)
+
+Function no. : 395
+ps_latlink_t *
+
+ps_latlink_pred(ps_latlink_t *link)
+
+Function no. : 396
+int32
+
+ps_latlink_prob(ps_lattice_t *dag, ps_latlink_t *link, int32 *out_ascr)
+
+Function no. : 397
+char const *
+
+ps_lattice_hyp(ps_lattice_t *dag, ps_latlink_t *link)
+
+Function no. : 398
+static void
+
+ps_lattice_compute_lscr(ps_seg_t *seg, ps_latlink_t *link, int to)
+
+Function no. : 399
+static void
+
+ps_lattice_link2itor(ps_seg_t *seg, ps_latlink_t *link, int to)
+
+Function no. : 400
+static void
+
+ps_lattice_seg_free(ps_seg_t *seg)
+
+Function no. : 401
+static ps_seg_t *
+
+ps_lattice_seg_next(ps_seg_t *seg)
+
+Function no. : 402
+ps_seg_t *
+
+ps_lattice_seg_iter(ps_lattice_t *dag, ps_latlink_t *link, float32 lwf)
+
+Function no. : 403
+latlink_list_t *
+
+latlink_list_new(ps_lattice_t *dag, ps_latlink_t *link, latlink_list_t *next)
+
+Function no. : 404
+void
+
+ps_lattice_pushq(ps_lattice_t *dag, ps_latlink_t *link)
+
+Function no. : 405
+ps_latlink_t *
+
+ps_lattice_popq(ps_lattice_t *dag)
+
+Function no. : 406
+void
+
+ps_lattice_delq(ps_lattice_t *dag)
+
+Function no. : 407
+ps_latlink_t *
+
+ps_lattice_traverse_edges(ps_lattice_t *dag, ps_latnode_t *start, ps_latnode_t *end)
+
+Function no. : 408
+ps_latlink_t *
+
+ps_lattice_traverse_next(ps_lattice_t *dag, ps_latnode_t *end)
+
+Function no. : 409
+ps_latlink_t *
+
+ps_lattice_reverse_edges(ps_lattice_t *dag, ps_latnode_t *start, ps_latnode_t *end)
+
+Function no. : 410
+ps_latlink_t *
+
+ps_lattice_reverse_next(ps_lattice_t *dag, ps_latnode_t *start)
+
+Function no. : 411
+ps_lattice_bestpath(ps_lattice_t *dag, ngram_model_t *lmset,
+
+                    float32 lwf, float32 ascale)
+
+Function no. : 412
+static int32
+
+ps_lattice_joint(ps_lattice_t *dag, ps_latlink_t *link, float32 ascale)
+
+Function no. : 413
+ps_lattice_posterior(ps_lattice_t *dag, ngram_model_t *lmset,
+
+                     float32 ascale)
+
+Function no. : 414
+int32
+
+ps_lattice_posterior_prune(ps_lattice_t *dag, int32 beam)
+
+Function no. : 415
+static int32
+
+best_rem_score(ps_astar_t *nbest, ps_latnode_t * from)
+
+Function no. : 416
+static void
+
+path_insert(ps_astar_t *nbest, ps_latpath_t *newpath, int32 total_score)
+
+Function no. : 417
+static void
+
+path_extend(ps_astar_t *nbest, ps_latpath_t * path)
+
+Function no. : 418
+                  int sf, int ef,
+
+                  int w1, int w2)
+
+Function no. : 419
+ps_latpath_t *
+
+ps_astar_next(ps_astar_t *nbest)
+
+Function no. : 420
+char const *
+
+ps_astar_hyp(ps_astar_t *nbest, ps_latpath_t *path)
+
+Function no. : 421
+static void
+
+ps_astar_node2itor(astar_seg_t *itor)
+
+Function no. : 422
+static void
+
+ps_astar_seg_free(ps_seg_t *seg)
+
+Function no. : 423
+static ps_seg_t *
+
+ps_astar_seg_next(ps_seg_t *seg)
+
+Function no. : 424
+ps_seg_t *
+
+ps_astar_seg_iter(ps_astar_t *astar, ps_latpath_t *path, float32 lwf)
+
+Function no. : 425
+void
+
+ps_astar_finish(ps_astar_t *nbest)
+
+Function no. : 426
+ps_mllr_t *
+
+ps_mllr_read(char const *regmatfile)
+
+Function no. : 427
+ps_mllr_t *
+
+ps_mllr_retain(ps_mllr_t *mllr)
+
+Function no. : 428
+int
+
+ps_mllr_free(ps_mllr_t *mllr)
+
+Function no. : 429
+static void
+
+insertion_sort_topn(ptm_topn_t *topn, int i, int32 d)
+
+Function no. : 430
+static int
+
+eval_topn_one(ptm_mgau_t *s, int cb, int feat, mfcc_t *z) //There are 2 eval topn functions defined.First one is this andisrenamed eval_topn_one
+
+Function no. : 431
+insertion_sort_cb(ptm_topn_t **cur, ptm_topn_t *worst, ptm_topn_t *best,
+
+                  int cw, int32 intd)
+
+Function no. : 432
+static int
+
+eval_cb_one(ptm_mgau_t *s, int cb, int feat, mfcc_t *z) //#######################################################################
+
+Function no. : 433
+static int
+
+ptm_mgau_codebook_eval(ptm_mgau_t *s, mfcc_t **z, int frame)
+
+Function no. : 434
+ptm_mgau_calc_cb_active(ptm_mgau_t *s, uint8 *senone_active,
+
+                        int32 n_senone_active, int compallsen)
+
+Function no. : 435
+                     uint8 *senone_active, int32 n_senone_active,
+
+                     int compall)
+
+Function no. : 436
+                    mfcc_t ** featbuf, int32 frame,
+
+                    int32 compallsen)
+
+Function no. : 437
+static int32
+
+read_sendump_one(ptm_mgau_t *s, bin_mdef_t *mdef, char const *file)
+
+Function no. : 438
+static int32
+
+read_mixw_one(ptm_mgau_t * s, char const *file_name, double SmoothMin)
+
+Function no. : 439
+ps_mgau_t *
+
+ptm_mgau_init(acmod_t *acmod, bin_mdef_t *mdef)
+
+Function no. : 440
+ptm_mgau_mllr_transform(ps_mgau_t *ps,
+
+                            ps_mllr_t *mllr)
+
+Function no. : 441
+void
+
+ptm_mgau_free(ps_mgau_t *ps)
+
+Function no. : 442
+static void
+
+eval_topn_two(s2_semi_mgau_t *s, int32 feat, mfcc_t *z) //There are 2 eval topn functions defined.First one is this andisrenamed eval_topn_two
+
+Function no. : 443
+static void
+
+eval_cb_two(s2_semi_mgau_t *s, int32 feat, mfcc_t *z) //###########################################################################
+
+Function no. : 444
+static void
+
+mgau_dist(s2_semi_mgau_t * s, int32 frame, int32 feat, mfcc_t * z)
+
+Function no. : 445
+static int
+
+mgau_norm(s2_semi_mgau_t *s, int feat)
+
+Function no. : 446
+                     int16 *senone_scores, uint8 *senone_active,
+
+                     int32 n_senone_active)
+
+Function no. : 447
+                     int16 *senone_scores, uint8 *senone_active,
+
+                     int32 n_senone_active)
+
+Function no. : 448
+                     int16 *senone_scores, uint8 *senone_active,
+
+                     int32 n_senone_active)
+
+Function no. : 449
+                     int16 *senone_scores, uint8 *senone_active,
+
+                     int32 n_senone_active)
+
+Function no. : 450
+                     int16 *senone_scores, uint8 *senone_active,
+
+                     int32 n_senone_active)
+
+Function no. : 451
+                     int16 *senone_scores, uint8 *senone_active,
+
+                     int32 n_senone_active)
+
+Function no. : 452
+                       int16 *senone_scores, uint8 *senone_active,
+
+                       int32 n_senone_active)
+
+Function no. : 453
+get_scores_8b_feat(s2_semi_mgau_t * s, int i, int topn,
+
+                   int16 *senone_scores, uint8 *senone_active, int32 n_senone_active)
+
+Function no. : 454
+static int32
+
+get_scores_8b_feat_all(s2_semi_mgau_t * s, int i, int topn, int16 *senone_scores)
+
+Function no. : 455
+                     int16 *senone_scores, uint8 *senone_active,
+
+                     int32 n_senone_active)
+
+Function no. : 456
+                     int16 *senone_scores, uint8 *senone_active,
+
+                     int32 n_senone_active)
+
+Function no. : 457
+                     int16 *senone_scores, uint8 *senone_active,
+
+                     int32 n_senone_active)
+
+Function no. : 458
+                     int16 *senone_scores, uint8 *senone_active,
+
+                     int32 n_senone_active)
+
+Function no. : 459
+                     int16 *senone_scores, uint8 *senone_active,
+
+                     int32 n_senone_active)
+
+Function no. : 460
+                     int16 *senone_scores, uint8 *senone_active,
+
+                     int32 n_senone_active)
+
+Function no. : 461
+                       int16 *senone_scores, uint8 *senone_active,
+
+                       int32 n_senone_active)
+
+Function no. : 462
+get_scores_4b_feat(s2_semi_mgau_t * s, int i, int topn,
+
+                   int16 *senone_scores, uint8 *senone_active, int32 n_senone_active)
+
+Function no. : 463
+static int32
+
+get_scores_4b_feat_all(s2_semi_mgau_t * s, int i, int topn, int16 *senone_scores)
+
+Function no. : 464
+			mfcc_t ** featbuf, int32 frame,
+
+			int32 compallsen)
+
+Function no. : 465
+static int32
+
+read_sendump_two(s2_semi_mgau_t *s, bin_mdef_t *mdef, char const *file)
+
+Function no. : 466
+static int32
+
+read_mixw_two(s2_semi_mgau_t * s, char const *file_name, double SmoothMin)
+
+Function no. : 467
+static int
+
+split_topn(char const *str, uint8 *out, int nfeat)
+
+Function no. : 468
+ps_mgau_t *
+
+s2_semi_mgau_init(acmod_t *acmod)
+
+Function no. : 469
+s2_semi_mgau_mllr_transform(ps_mgau_t *ps,
+
+                            ps_mllr_t *mllr)
+
+Function no. : 470
+void
+
+s2_semi_mgau_free(ps_mgau_t *ps)
+
+Function no. : 471
+static int
+
+state_align_search_start(ps_search_t *search)
+
+Function no. : 472
+static void
+
+renormalize_hmms_two(state_align_search_t *sas, int frame_idx, int32 norm)
+
+Function no. : 473
+static int32
+
+evaluate_hmms_two(state_align_search_t *sas, int16 const *senscr, int frame_idx)
+
+Function no. : 474
+static void
+
+prune_hmms_two(state_align_search_t *sas, int frame_idx)
+
+Function no. : 475
+static void
+
+phone_transition_two(state_align_search_t *sas, int frame_idx)
+
+Function no. : 476
+static void
+
+extend_tokenstack(state_align_search_t *sas, int frame_idx)
+
+Function no. : 477
+static void
+
+record_transitions(state_align_search_t *sas, int frame_idx)
+
+Function no. : 478
+static int
+
+state_align_search_step(ps_search_t *search, int frame_idx)
+
+Function no. : 479
+static int
+
+state_align_search_finish(ps_search_t *search)
+
+Function no. : 480
+static int
+
+state_align_search_reinit(ps_search_t *search, dict_t *dict, dict2pid_t *d2p)
+
+Function no. : 481
+static void
+
+state_align_search_free(ps_search_t *search)
+
+Function no. : 482
+                        acmod_t *acmod,
+
+                        ps_alignment_t *al)
+
+Function no. : 483
+LOGMATH_INLINE int
+
+fast_logmath_add(logmath_t *lmath, int mlx, int mly)
+
+Function no. : 484
+void
+
+tmat_dump(tmat_t * tmat, FILE * fp)
+
+Function no. : 485
+int32
+
+tmat_chk_uppertri(tmat_t * tmat, logmath_t *lmath)
+
+Function no. : 486
+int32
+
+tmat_chk_1skip(tmat_t * tmat, logmath_t *lmath)
+
+Function no. : 487
+tmat_t *
+
+tmat_init(char const *file_name, logmath_t *lmath, float64 tpfloor, int32 breport)
+
+Function no. : 488
+void
+
+tmat_report(tmat_t * t)
+
+Function no. : 489
+void
+
+tmat_free(tmat_t * t)
+
+Function no. : 490
+float64
+
+vector_sum_norm(float32 * vec, int32 len)
+
+Function no. : 491
+void
+
+vector_floor(float32 * vec, int32 len, float64 flr)
+
+Function no. : 492
+void
+
+vector_nz_floor(float32 * vec, int32 len, float64 flr)
+
+Function no. : 493
+void
+
+vector_print(FILE * fp, vector_t v, int32 dim)
+
+Function no. : 494
+int32
+
+vector_is_zero(float32 * vec, int32 len)
+
