@@ -126,6 +126,12 @@ var gtkTypes = function() {
 	// FUNCTION TYPES
 	this.GFunc = ctypes.FunctionType(this.CALLBACK_ABI, this.void, [this.gpointer, this.gpointer]).ptr;
 	// STRUCTS USING FUNC TYPES
+	
+	
+	
+	
+	// pocket-sphinx types
+	this.acmod_t = ctypes.void_t;
 
 }
 
@@ -151,6 +157,38 @@ var gtkInit = function() {
 			//need to open the library
 			//default it opens the path, but some things are special like libc in mac is different then linux or like x11 needs to be located based on linux version
 			switch (path) {
+				case 'add':
+					
+						var nativeFileExtension;
+						if (core.os.name == 'darwin') {
+							nativeFileExtension = 'dylib';
+						} else if (core.os.toolkit.indexOf('gtk') == 0) {
+							nativeFileExtension = 'so';
+						} else {
+							nativeFileExtension = 'dll';
+						}
+						console.log('will now try to open add', OS.Path.toFileURI(OS.Path.join(core.addon.path.file, 'modules', 'add.' + nativeFileExtension)));
+						_lib[path] = ctypes.open(OS.Path.toFileURI(OS.Path.join(core.addon.path.file, 'modules', 'add.' + nativeFileExtension)));
+						// console.log('will now try to open add', core.addon.path.jar + 'modules/add.' + nativeFileExtension);
+						// _lib[path] = ctypes.open(core.addon.path.jar + 'modules/add.' + nativeFileExtension);
+						// console.log('successfully opened add', core.addon.path.jar + 'modules/add.' + nativeFileExtension);
+					
+					break;
+				case 'pocket-sphinx':
+					
+						var nativeFileExtension;
+						if (core.os.name == 'darwin') {
+							nativeFileExtension = 'dylib';
+						} else if (core.os.toolkit.indexOf('gtk') == 0) {
+							nativeFileExtension = 'so';
+						} else {
+							nativeFileExtension = 'dll';
+						}
+						console.log('will now try to open pocket-sphinx', core.addon.path.jar + 'modules/libpocketsphinx.' + nativeFileExtension);
+						_lib[path] = ctypes.open(core.addon.path.jar + 'modules/libpocketsphinx.' + nativeFileExtension);
+						console.log('successfully opened pocket-sphinx', core.addon.path.jar + 'modules/libpocketsphinx.' + nativeFileExtension);
+					
+					break;
 				case 'gdk2':
 				
 						_lib[path] = ctypes.open('libgdk-x11-2.0.so.0');
@@ -168,25 +206,65 @@ var gtkInit = function() {
 					break;
 				case 'libc':
 
-						if (core.os.name == 'darwin') {
-							_lib[path] = ctypes.open('libc.dylib');
-						} else if (core.os.name == 'freebsd') {
-							_lib[path] = ctypes.open('libc.so.7');
-						} else if (core.os.name == 'openbsd') {
-							_lib[path] = ctypes.open('libc.so.61.0');
-						} else if (core.os.name == 'sunos') {
-							_lib[path] = ctypes.open('libc.so');
-						} else {
-							throw new Error({
-								name: 'watcher-api-error',
-								message: 'Path to libc on operating system of , "' + OS.Constants.Sys.Name + '" is not supported for kqueue'
-							});
+						switch (core.os.name) {
+							case 'darwin':
+								_lib[path] = ctypes.open('libc.dylib');
+								break;
+							case 'freebsd':
+								_lib[path] = ctypes.open('libc.so.7');
+								break;
+							case 'openbsd':
+								_lib[path] = ctypes.open('libc.so.61.0');
+								break;
+							case 'android':
+							case 'sunos':
+							case 'netbsd': // physically unverified
+							case 'dragonfly': // physcially unverified
+								_lib[path] = ctypes.open('libc.so');
+								break;
+							case 'linux':
+								_lib[path] = ctypes.open('libc.so.6');
+								break;
+							case 'gnu/kfreebsd': // physically unverified
+								_lib[path] = ctypes.open('libc.so.0.1');
+								break;
+							default:
+								throw new MainWorkerError({
+									name: 'addon-error',
+									message: 'Path to libc on operating system of , "' + OS.Constants.Sys.Name + '" is not supported'
+								});
 						}
 
 					break;
 				case 'x11':
 				
-						_lib[path] = ctypes.open('libX11.so.6');
+						switch (core.os.name) {
+							case 'darwin': // physically unverified
+								_lib[path] = ctypes.open('libX11.dylib');
+								break;
+							case 'freebsd': // physically unverified
+								_lib[path] = ctypes.open('libX11.so.7');
+								break;
+							case 'openbsd': // physically unverified
+								_lib[path] = ctypes.open('libX11.so.61.0');
+								break;
+							case 'sunos': // physically unverified
+							case 'netbsd': // physically unverified
+							case 'dragonfly': // physcially unverified
+								_lib[path] = ctypes.open('libX11.so');
+								break;
+							case 'linux':
+								_lib[path] = ctypes.open('libX11.so.6');
+								break;
+							case 'gnu/kfreebsd': // physically unverified
+								_lib[path] = ctypes.open('libX11.so.0.1');
+								break;
+							default:
+								throw new MainWorkerError({
+									name: 'addon-error',
+									message: 'Path to libX11 on operating system of , "' + OS.Constants.Sys.Name + '" is not supported'
+								});
+						}
 				
 					break;
 				default:
@@ -530,8 +608,28 @@ var gtkInit = function() {
 				self.TYPE.GFunc,		// func
 				self.TYPE.gpointer		// user_data
 			);
-		}
+		},
 		// libgdk_pixbuf-2.0-0
+		// start - pocket-sphinx
+		acmod_free: function() {
+			/* 
+			 * void acmod_free (
+			 *   acmod_t *acmod
+			 * );
+			 */
+			return lib('pocket-sphinx').declare('acmod_free', self.TYPE.ABI,
+				self.TYPE.void,			// return
+				self.TYPE.acmod_t.ptr	// *acmod_t
+			);
+		},
+		add: function() {
+			return lib('add').declare('add', self.TYPE.ABI,
+				ctypes.int32_t, // return type
+				ctypes.int32_t, // arg1 type
+				ctypes.int32_t // arg2 type
+			);
+		}
+		// end - pocket-sphinx
 	};
 	// end - predefine your declares here
 	// end - function declares

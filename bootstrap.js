@@ -6,7 +6,10 @@ Cu.import('resource://gre/modules/osfile.jsm');
 Cu.import('resource://gre/modules/Promise.jsm');
 Cu.import('resource://gre/modules/Services.jsm');
 Cu.import('resource://gre/modules/XPCOMUtils.jsm');
-Cu.importGlobalProperties(['btoa']);
+// Cu.importGlobalProperties(['btoa']);
+
+const PromiseWorker = Cu.import('resource://gre/modules/PromiseWorker.jsm', {}).BasePromiseWorker;
+
 
 // Globals
 const core = {
@@ -16,169 +19,95 @@ const core = {
 		path: {
 			name: 'foxspeak',
 			content: 'chrome://foxspeak/content/',
+			images: 'chrome://foxspeak/content/resources/images/',
 			locale: 'chrome://foxspeak/locale/',
+			modules: 'chrome://foxspeak/content/modules/',
 			resources: 'chrome://foxspeak/content/resources/',
-			images: 'chrome://foxspeak/content/resources/images/'
-		}
+			styles: 'chrome://foxspeak/content/resources/styles/',
+			workers: 'chrome://foxspeak/content/modules/workers/'
+		},
+		cache_key: Math.random() // set to version on release
 	},
 	os: {
-		name: OS.Constants.Sys.Name.toLowerCase()
+		name: OS.Constants.Sys.Name.toLowerCase(),
+		toolkit: Services.appinfo.widgetToolkit.toLowerCase(),
+		xpcomabi: Services.appinfo.XPCOMABI
 	}
 };
 
-var PromiseWorker;
+const JETPACK_DIR_BASENAME = 'jetpack';
+const OSPath_simpleStorage = OS.Path.join(OS.Constants.Path.profileDir, JETPACK_DIR_BASENAME, core.addon.id, 'simple-storage');
+const myPrefBranch = 'extensions.' + core.addon.id + '.';
+
 var bootstrap = this;
 const NS_HTML = 'http://www.w3.org/1999/xhtml';
-const cui_cssUri = Services.io.newURI(core.addon.path.resources + 'cui.css', null, null);
+const CUI_CSSURI = Services.io.newURI(core.addon.path.styles + 'cui.css', null, null);
 
 // Lazy Imports
 const myServices = {};
 XPCOMUtils.defineLazyGetter(myServices, 'hph', function () { return Cc['@mozilla.org/network/protocol;1?name=http'].getService(Ci.nsIHttpProtocolHandler); });
 XPCOMUtils.defineLazyGetter(myServices, 'sb', function () { return Services.strings.createBundle(core.addon.path.locale + 'global.properties?' + Math.random()); /* Randomize URI to work around bug 719376 */ });
 
-function extendCore() {
-	// adds some properties i use to core
-	switch (core.os.name) {
-		case 'winnt':
-		case 'winmo':
-		case 'wince':
-			core.os.version = parseFloat(Services.sysinfo.getProperty('version'));
-			// http://en.wikipedia.org/wiki/List_of_Microsoft_Windows_versions
-			if (core.os.version == 6.0) {
-				core.os.version_name = 'vista';
-			}
-			if (core.os.version >= 6.1) {
-				core.os.version_name = '7+';
-			}
-			if (core.os.version == 5.1 || core.os.version == 5.2) { // 5.2 is 64bit xp
-				core.os.version_name = 'xp';
-			}
-			break;
-			
-		case 'darwin':
-			var userAgent = myServices.hph.userAgent;
-			//console.info('userAgent:', userAgent);
-			var version_osx = userAgent.match(/Mac OS X 10\.([\d\.]+)/);
-			//console.info('version_osx matched:', version_osx);
-			
-			if (!version_osx) {
-				throw new Error('Could not identify Mac OS X version.');
-			} else {
-				var version_osx_str = version_osx[1];
-				var ints_split = version_osx[1].split('.');
-				if (ints_split.length == 1) {
-					core.os.version = parseInt(ints_split[0]);
-				} else if (ints_split.length >= 2) {
-					core.os.version = ints_split[0] + '.' + ints_split[1];
-					if (ints_split.length > 2) {
-						core.os.version += ints_split.slice(2).join('');
-					}
-					core.os.version = parseFloat(core.os.version);
-				}
-				// this makes it so that 10.10.0 becomes 10.100
-				// 10.10.1 => 10.101
-				// so can compare numerically, as 10.100 is less then 10.101
-				
-				//core.os.version = 6.9; // note: debug: temporarily forcing mac to be 10.6 so we can test kqueue
-			}
-			break;
-		default:
-			// nothing special
-	}
-	
-	core.os.toolkit = Services.appinfo.widgetToolkit.toLowerCase();
-	core.os.xpcomabi = Services.appinfo.XPCOMABI;
-	
-	core.firefox = {};
-	core.firefox.version = Services.appinfo.version;
-	
-	console.log('done adding to core, it is now:', core);
-}
-
 // START - Addon Functionalities
-
-// END - Addon Functionalities
-
-/*start - windowlistener*/
-var windowListener = {
-	//DO NOT EDIT HERE
-	onOpenWindow: function (aXULWindow) {
-		// Wait for the window to finish loading
-		var aDOMWindow = aXULWindow.QueryInterface(Ci.nsIInterfaceRequestor).getInterface(Ci.nsIDOMWindowInternal || Ci.nsIDOMWindow);
-		aDOMWindow.addEventListener('load', function () {
-			aDOMWindow.removeEventListener('load', arguments.callee, false);
-			windowListener.loadIntoWindow(aDOMWindow);
-		}, false);
-	},
-	onCloseWindow: function (aXULWindow) {},
-	onWindowTitleChange: function (aXULWindow, aNewTitle) {},
-	register: function () {
+var myWidgetListener = {
+	onWidgetDestroyed: function(aWidgetId) {
+		if (aWidgetId != 'cui_foxspeak') {
+			return
+		}
+		console.log('my widget destoryed');
+		CustomizableUI.removeListener(myWidgetListener);
 		
-		// Load into any existing windows
-		let DOMWindows = Services.wm.getEnumerator(null);
+		var DOMWindows = Services.wm.getEnumerator('navigator:browser');
 		while (DOMWindows.hasMoreElements()) {
-			let aDOMWindow = DOMWindows.getNext();
-			if (aDOMWindow.document.readyState == 'complete') { //on startup `aDOMWindow.document.readyState` is `uninitialized`
-				windowListener.loadIntoWindow(aDOMWindow);
-			} else {
-				aDOMWindow.addEventListener('load', function () {
-					aDOMWindow.removeEventListener('load', arguments.callee, false);
-					windowListener.loadIntoWindow(aDOMWindow);
-				}, false);
-			}
+			var DOMWindow = DOMWindows.getNext();
+			var DOMWindowUtils = DOMWindow.QueryInterface(Ci.nsIInterfaceRequestor).getInterface(Ci.nsIDOMWindowUtils);
+			DOMWindowUtils.removeSheet(CUI_CSSURI, DOMWindowUtils.AUTHOR_SHEET);
 		}
-		// Listen to new windows
-		Services.wm.addListener(windowListener);
-	},
-	unregister: function () {
-		// Unload from any existing windows
-		let DOMWindows = Services.wm.getEnumerator(null);
-		while (DOMWindows.hasMoreElements()) {
-			let aDOMWindow = DOMWindows.getNext();
-			windowListener.unloadFromWindow(aDOMWindow);
-		}
-		/*
-		for (var u in unloaders) {
-			unloaders[u]();
-		}
-		*/
-		//Stop listening so future added windows dont get this attached
-		Services.wm.removeListener(windowListener);
-	},
-	//END - DO NOT EDIT HERE
-	loadIntoWindow: function (aDOMWindow) {
-		if (!aDOMWindow) { return }
 		
-		if (aDOMWindow.gBrowser) {
-			var domWinUtils = aDOMWindow.QueryInterface(Ci.nsIInterfaceRequestor).getInterface(Ci.nsIDOMWindowUtils);
-			domWinUtils.loadSheet(cui_cssUri, domWinUtils.AUTHOR_SHEET);
-		}
-	},
-	unloadFromWindow: function (aDOMWindow) {
-		if (!aDOMWindow) { return }
-		
-		if (aDOMWindow.gBrowser) {
-			var domWinUtils = aDOMWindow.QueryInterface(Ci.nsIInterfaceRequestor).getInterface(Ci.nsIDOMWindowUtils);
-			domWinUtils.removeSheet(cui_cssUri, domWinUtils.AUTHOR_SHEET);
-		}
+		console.log('all my css styles removed from windows that had a cui, which are navigator:browser type windows');
 	}
 };
-/*end - windowlistener*/
+// END - Addon Functionalities
 
 function install() {}
-function uninstall() {}
+
+function uninstall(aData, aReason) {
+	if (aReason == ADDON_UNINSTALL) {
+		// delete prefs
+	}
+}
 
 function startup(aData, aReason) {
-	core.addon.aData = aData;
+	// core.addon.aData = aData;
 	extendCore();
 	
-	PromiseWorker = Cu.import(core.addon.path.content + 'modules/PromiseWorker.jsm').BasePromiseWorker;
+	// core.addon.path.jar = 'jar:' + OS.Path.toFileURI(aData.installPath.path).replace(aData.id + '.xpi', aData.id + '.xpi!/');
+	core.addon.path.jar = 'jar:' + OS.Path.toFileURI(aData.installPath.path) + '!/';
+	core.addon.path.file = aData.installPath.path;
+	// jar:file:///C:/Users/Vayeate/AppData/Roaming/Mozilla/Firefox/Profiles/aksozfjt.Unnamed%20Profile%2010/extensions/FoxSpeak@jetpack.xpi!/
+	// path to bootstrap.js would be: `jar:file:///C:/Users/Vayeate/AppData/Roaming/Mozilla/Firefox/Profiles/aksozfjt.Unnamed%20Profile%2010/extensions/FoxSpeak@jetpack.xpi!/bootstrap.js`
 	
-	var promise_getMainWorker = SIPWorker('MainWorker', core.addon.path.content + 'modules/workers/MainWorker.js');
+	console.log('core.addon.path.jar', core.addon.path.jar);
+	
+	var promise_getMainWorker = SIPWorker('MainWorker', core.addon.path.workers + 'MainWorker.js');
 	promise_getMainWorker.then(
 		function(aVal) {
 			console.log('Fullfilled - promise_getMainWorker - ', aVal);
 			// start - do stuff here - promise_getMainWorker
+			
+				// setup custom MainWorker messages - PromiseWorker style
+				// Define a custom error prototype.
+				function MainWorkerError(errObj) {
+				  this.message = errObj.message;
+				  this.name = errObj.name;
+				}
+				MainWorkerError.fromMsg = function(msgObj) {
+				  return new MainWorkerError(msgObj);
+				};
+
+				// Register a constructor.
+				MainWorker.ExceptionHandlers['MainWorkerError'] = MainWorkerError.fromMsg;
+			
 			// end - do stuff here - promise_getMainWorker
 		},
 		function(aReason) {
@@ -198,32 +127,32 @@ function startup(aData, aReason) {
 		}
 	);
 	
+	CustomizableUI.addListener(myWidgetListener);
 	CustomizableUI.createWidget({
 		id: 'cui_foxspeak',
 		defaultArea: CustomizableUI.AREA_NAVBAR,
 		label: myServices.sb.GetStringFromName('cui_foxspeak_lbl'),
 		tooltiptext: myServices.sb.GetStringFromName('cui_foxspeak_tip'),
+		onBeforeCreated: function(aDOMDocument) {
+			console.error('onBeforeCreated triggered with aDOMDocument:', aDOMDocument);
+			var DOMWindow = aDOMDocument.defaultView;
+			var DOMWindowUtils = DOMWindow.QueryInterface(Ci.nsIInterfaceRequestor).getInterface(Ci.nsIDOMWindowUtils);
+			console.log('CUI_CSSURI:', CUI_CSSURI);
+			DOMWindowUtils.loadSheet(CUI_CSSURI, DOMWindowUtils.AUTHOR_SHEET);
+			console.error('ok added my css');
+		},
 		onCommand: function(aEvent) {
-			var aDOMWin = aEvent.target.ownerDocument.defaultView;
-			aDOMWin.alert('hello from foxspeak!');
+			var DOMWindow = aEvent.target.ownerDocument.defaultView;
+			
+			DOMWindow.alert('hello from foxspeak!');
 		}
 	});
-	
-	//windowlistener more
-	windowListener.register();
-	//end windowlistener more
 }
 
 function shutdown(aData, aReason) {
 	if (aReason == APP_SHUTDOWN) { return }
 	
 	CustomizableUI.destroyWidget('cui_foxspeak');
-	
-	//windowlistener more
-	windowListener.unregister();
-	//end windowlistener more
-	
-	Cu.unload(core.addon.path.content + 'modules/PromiseWorker.jsm');
 }
 
 // start - common helper functions
@@ -316,5 +245,70 @@ function SIPWorker(workerScopeName, aPath, aCore=core) {
 	
 	return deferredMain_SIPWorker.promise;
 	
+}
+
+function aReasonMax(aReason) {
+	var deepestReason = aReason;
+	while (deepestReason.hasOwnProperty('aReason') || deepestReason.hasOwnProperty()) {
+		if (deepestReason.hasOwnProperty('aReason')) {
+			deepestReason = deepestReason.aReason;
+		} else if (deepestReason.hasOwnProperty('aCaught')) {
+			deepestReason = deepestReason.aCaught;
+		}
+	}
+	return deepestReason;
+}
+
+function extendCore() {
+	// adds some properties i use to core based on the current operating system, it needs a switch, thats why i couldnt put it into the core obj at top
+	switch (core.os.name) {
+		case 'winnt':
+		case 'winmo':
+		case 'wince':
+			core.os.version = parseFloat(Services.sysinfo.getProperty('version'));
+			// http://en.wikipedia.org/wiki/List_of_Microsoft_Windows_versions
+			if (core.os.version == 6.0) {
+				core.os.version_name = 'vista';
+			}
+			if (core.os.version >= 6.1) {
+				core.os.version_name = '7+';
+			}
+			if (core.os.version == 5.1 || core.os.version == 5.2) { // 5.2 is 64bit xp
+				core.os.version_name = 'xp';
+			}
+			break;
+			
+		case 'darwin':
+			var userAgent = myServices.hph.userAgent;
+
+			var version_osx = userAgent.match(/Mac OS X 10\.([\d\.]+)/);
+
+			
+			if (!version_osx) {
+				throw new Error('Could not identify Mac OS X version.');
+			} else {
+				var version_osx_str = version_osx[1];
+				var ints_split = version_osx[1].split('.');
+				if (ints_split.length == 1) {
+					core.os.version = parseInt(ints_split[0]);
+				} else if (ints_split.length >= 2) {
+					core.os.version = ints_split[0] + '.' + ints_split[1];
+					if (ints_split.length > 2) {
+						core.os.version += ints_split.slice(2).join('');
+					}
+					core.os.version = parseFloat(core.os.version);
+				}
+				// this makes it so that 10.10.0 becomes 10.100
+				// 10.10.1 => 10.101
+				// so can compare numerically, as 10.100 is less then 10.101
+				
+				//core.os.version = 6.9; // note: debug: temporarily forcing mac to be 10.6 so we can test kqueue
+			}
+			break;
+		default:
+			// nothing special
+	}
+	
+
 }
 // end - common helper functions

@@ -5,7 +5,7 @@ importScripts('resource://gre/modules/osfile.jsm');
 importScripts('resource://gre/modules/workers/require.js');
 
 // Globals
-const core = { // have to set up the main keys that you want when aCore is merged from mainthread in init
+var core = { // have to set up the main keys that you want when aCore is merged from mainthread in init
 	addon: {
 		path: {
 			content: 'chrome://foxspeak/content/',
@@ -26,45 +26,56 @@ importScripts(core.addon.path.content + 'modules/cutils.jsm');
 importScripts(core.addon.path.content + 'modules/ctypes_math.jsm');
 
 // Setup PromiseWorker
-var PromiseWorker = require(core.addon.path.content + 'modules/workers/PromiseWorker.js');
-var worker = new PromiseWorker.AbstractWorker();
+var PromiseWorker = require("resource://gre/modules/workers/PromiseWorker.js");
+
+// Instantiate AbstractWorker (see below).
+var worker = new PromiseWorker.AbstractWorker()
+
 worker.dispatch = function(method, args = []) {
-	return self[method](...args);
+  // Dispatch a call to method `method` with args `args`
+  return self[method](...args);
 };
-worker.postMessage = function(result, ...transfers) {
-	self.postMessage(result, ...transfers);
+worker.postMessage = function(...args) {
+  // Post a message to the main thread
+  self.postMessage(...args);
 };
 worker.close = function() {
-	self.close();
+  // Close the worker
+  self.close();
 };
-self.addEventListener('message', msg => worker.handleMessage(msg));
+worker.log = function(...args) {
+  // Log (or discard) messages (optional)
+  dump('Worker: ' + args.join(' ') + '\n');
+};
+
+// Connect it to message port.
+self.addEventListener("message", msg => worker.handleMessage(msg));
+
+// Define a custom error prototype.
+function MainWorkerError(msgObj) {
+  this.message = msgObj.message;
+  this.name = msgObj.name;
+}
+MainWorkerError.prototype.toMsg = function() {
+  return {
+    exn: 'MainWorkerError',
+    message: this.message,
+	name: this.name
+  };
+};
 
 ////// end of imports and definitions
 
-function init(objCore) {
+function init(objCore) { // function name init required for SIPWorker
 	//console.log('in worker init');
 	
 	// merge objCore into core
 	// core and objCore is object with main keys, the sub props
 	
-	for (var p in objCore) {
-		/* // cant set things on core as its const
-		if (!(p in core)) {
-			core[p] = {};
-		}
-		*/
-		
-		for (var pp in objCore[p]) {
-			core[p][pp] = objCore[p][pp];
-		}
-	}
-
-	if (core.os.toolkit == 'gtk2') {
-		core.os.name = 'gtk';
-	}
+	core = objCore;
 	
 	// I import ostypes_*.jsm in init as they may use things like core.os.isWinXp etc
-	switch (core.os.name) {
+	switch (core.os.toolkit.indexOf('gtk') == 0 ? 'gtk' : core.os.name) {
 		case 'winnt':
 		case 'winmo':
 		case 'wince':
@@ -77,7 +88,7 @@ function init(objCore) {
 			importScripts(core.addon.path.content + 'modules/ostypes_mac.jsm');
 			break;
 		default:
-			throw new Error({
+			throw new MainWorkerError({
 				name: 'addon-error',
 				message: 'Operating system, "' + OS.Constants.Sys.Name + '" is not supported'
 			});
@@ -85,29 +96,28 @@ function init(objCore) {
 	
 	// OS Specific Init
 	switch (core.os.name) {
-		case 'winnt':
-		case 'winmo':
-		case 'wince':
-				
-				OSStuff.hiiii = true;
-				
-			break;
+		// case 'winnt':
+		// case 'winmo':
+		// case 'wince':
+		// 		
+		// 		OSStuff.hiiii = true;
+		// 		
+		// 	break;
 		default:
 			// do nothing special
 	}
 	
-	return true;
+	// console.log('acmod_free:', ostypes.API('acmod_free'));
+	// ostypes.API('acmod_free')(null);
+	
+	console.log('acmod_free:', ostypes.API('add'));
+	var rez = ostypes.API('add')(5, 4);
+	console.log('rez:', rez);
+	
+	console.log('FoxSpeak MainWorker init success');
+	return true; // required for SIPWorker
 }
 
 // Start - Addon Functionality
 
 // End - Addon Functionality
-
-var txtEn = new TextEncoder()
-var pth = OS.Path.join(OS.Constants.Path.desktopDir, 'logit.txt');
-
-function logit(txt) {
-	var valOpen = OS.File.open(pth, {write: true, append: true});
-	var valWrite = valOpen.write(txtEn.encode(txt + '\n'));
-	valOpen.close();
-}
