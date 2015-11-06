@@ -167,11 +167,9 @@ var gtkInit = function() {
 						} else {
 							nativeFileExtension = 'dll';
 						}
-						console.log('will now try to open add', OS.Path.toFileURI(OS.Path.join(core.addon.path.file, 'modules', 'add.' + nativeFileExtension)));
-						_lib[path] = ctypes.open(OS.Path.toFileURI(OS.Path.join(core.addon.path.file, 'modules', 'add.' + nativeFileExtension)));
-						// console.log('will now try to open add', core.addon.path.jar + 'modules/add.' + nativeFileExtension);
-						// _lib[path] = ctypes.open(core.addon.path.jar + 'modules/add.' + nativeFileExtension);
-						// console.log('successfully opened add', core.addon.path.jar + 'modules/add.' + nativeFileExtension);
+						console.log('will now try to open add', OS.Path.join(core.addon.path.file, 'modules', 'add.' + nativeFileExtension));
+						_lib[path] = ctypes.open(OS.Path.join(core.addon.path.file, 'modules', 'add.' + nativeFileExtension));
+
 					
 					break;
 				case 'pocket-sphinx':
@@ -184,9 +182,9 @@ var gtkInit = function() {
 						} else {
 							nativeFileExtension = 'dll';
 						}
-						console.log('will now try to open pocket-sphinx', core.addon.path.jar + 'modules/libpocketsphinx.' + nativeFileExtension);
-						_lib[path] = ctypes.open(core.addon.path.jar + 'modules/libpocketsphinx.' + nativeFileExtension);
-						console.log('successfully opened pocket-sphinx', core.addon.path.jar + 'modules/libpocketsphinx.' + nativeFileExtension);
+						
+						_lib[path] = ctypes.open(OS.Path.join(core.addon.path.file, 'modules', 'libpocketsphinx.' + nativeFileExtension));
+						
 					
 					break;
 				case 'gdk2':

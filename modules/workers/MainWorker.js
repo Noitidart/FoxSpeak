@@ -107,12 +107,13 @@ function init(objCore) { // function name init required for SIPWorker
 			// do nothing special
 	}
 	
-	// console.log('acmod_free:', ostypes.API('acmod_free'));
-	// ostypes.API('acmod_free')(null);
 	
-	console.log('acmod_free:', ostypes.API('add'));
+	console.log('add:', ostypes.API('add'));
 	var rez = ostypes.API('add')(5, 4);
 	console.log('rez:', rez);
+
+	console.log('acmod_free:', ostypes.API('acmod_free'));
+	ostypes.API('acmod_free')(null);
 	
 	console.log('FoxSpeak MainWorker init success');
 	return true; // required for SIPWorker
