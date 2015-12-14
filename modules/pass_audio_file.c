@@ -125,7 +125,7 @@ recognize_from_file(char *filename, int srate)
 	E_FATAL("Can not decode mp3 files, convert input file to WAV 16kHz 16-bit mono before decoding.\n");
     }
     
-    ps_start_utt(ps, NULL);
+    ps_start_utt(ps);
     utt_started = FALSE;
 
     while ((k = fread(adbuf, sizeof(int16), 2048, rawfd)) > 0) {
