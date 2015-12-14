@@ -25477,3 +25477,10 @@ int32 vector_is_zero (float32 *vec,	/* In: Vector to be checked */
  *
  *
  */
+uint8
+ps_get_in_speech(ps_decoder_t *ps)
+{
+    return fe_get_vad_state(ps->acmod->fe);
+}
+
+
