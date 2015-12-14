@@ -2468,3 +2468,8 @@ int32
 
 vector_is_zero(float32 * vec, int32 len)
 
+Function no. : 495
+uint8
+
+ps_get_in_speech(ps_decoder_t *ps)
+
