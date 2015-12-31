@@ -73,19 +73,18 @@ function init(objCore) { // function name init required for SIPWorker
 	// core and objCore is object with main keys, the sub props
 	
 	core = objCore;
+	core.os.mname = core.os.toolkit.indexOf('gtk') == 0 ? 'gtk' : core.os.name; // mname stands for modified-name	
 	
 	// I import ostypes_*.jsm in init as they may use things like core.os.isWinXp etc
-	switch (core.os.toolkit.indexOf('gtk') == 0 ? 'gtk' : core.os.name) {
+	switch (core.os.mname) {
 		case 'winnt':
 		case 'winmo':
 		case 'wince':
 			importScripts(core.addon.path.content + 'modules/ostypes_win.jsm');
 			break
 		case 'gtk':
-			importScripts(core.addon.path.content + 'modules/ostypes_gtk.jsm');
-			break;
 		case 'darwin':
-			importScripts(core.addon.path.content + 'modules/ostypes_mac.jsm');
+			importScripts(core.addon.path.content + 'modules/ostypes_unix.jsm');
 			break;
 		default:
 			throw new MainWorkerError({
@@ -94,6 +93,10 @@ function init(objCore) { // function name init required for SIPWorker
 			});
 	}
 	
+	// Pocket Sphinx Specific Init
+	ps = ostypes.TYPE.ps_decoder_t.ptr();
+	rawfd = ostypes.TYPE.FILE.ptr();
+
 	// OS Specific Init
 	switch (core.os.name) {
 		// case 'winnt':
@@ -120,6 +123,15 @@ function init(objCore) { // function name init required for SIPWorker
 }
 
 // Start - Addon Functionality
+
+// static ps_decoder_t *ps;
+// static FILE *rawfd;
+
+// var ps = ostypes.TYPE.ps_decoder_t();
+// var rawfd = ostypes.TYPE.FILE();
+var ps;
+var rawfd;
+
 function check_wav_header(header, expected_sr) {
     // returns 0 if invalid
     // returns 1 if valid
