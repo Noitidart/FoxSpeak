@@ -1,74 +1,174 @@
 // Imports
-const {classes: Cc, interfaces: Ci, utils: Cu} = Components;
-Cu.import('resource:///modules/CustomizableUI.jsm');
-Cu.import('resource://gre/modules/devtools/Console.jsm');
-Cu.import('resource://gre/modules/osfile.jsm');
-Cu.import('resource://gre/modules/Promise.jsm');
+const {interfaces: Ci, utils: Cu, classes:Cc} = Components;
 Cu.import('resource://gre/modules/Services.jsm');
-Cu.import('resource://gre/modules/XPCOMUtils.jsm');
-// Cu.importGlobalProperties(['btoa']);
-
-const PromiseWorker = Cu.import('resource://gre/modules/PromiseWorker.jsm', {}).BasePromiseWorker;
-
+Cu.import('resource:///modules/CustomizableUI.jsm');
 
 // Globals
-const core = {
+var core = {
 	addon: {
 		name: 'FoxSpeak',
 		id: 'FoxSpeak@jetpack',
 		path: {
 			name: 'foxspeak',
+			//
 			content: 'chrome://foxspeak/content/',
-			images: 'chrome://foxspeak/content/resources/images/',
 			locale: 'chrome://foxspeak/locale/',
+			//
 			modules: 'chrome://foxspeak/content/modules/',
+			workers: 'chrome://foxspeak/content/modules/workers/',
+			//
 			resources: 'chrome://foxspeak/content/resources/',
+			images: 'chrome://foxspeak/content/resources/images/',
+			scripts: 'chrome://foxspeak/content/resources/scripts/',
 			styles: 'chrome://foxspeak/content/resources/styles/',
-			workers: 'chrome://foxspeak/content/modules/workers/'
+			fonts: 'chrome://foxspeak/content/resources/styles/fonts/',
+			pages: 'chrome://foxspeak/content/resources/pages/'
+			// below are added by worker
+			// storage: OS.Path.join(OS.Constants.Path.profileDir, 'jetpack', core.addon.id, 'simple-storage')
 		},
+		pref_branch: 'extensions.FoxSpeak@jetpack.',
 		cache_key: Math.random() // set to version on release
 	},
 	os: {
-		name: OS.Constants.Sys.Name.toLowerCase(),
+		// // name: added by worker
+		// // mname: added by worker
 		toolkit: Services.appinfo.widgetToolkit.toLowerCase(),
 		xpcomabi: Services.appinfo.XPCOMABI
+	},
+	firefox: {
+		// pid: Services.appinfo.processID,
+		// version: Services.appinfo.version,
+		// channel: Services.prefs.getCharPref('app.update.channel')
 	}
 };
 
-const JETPACK_DIR_BASENAME = 'jetpack';
-const OSPath_simpleStorage = OS.Path.join(OS.Constants.Path.profileDir, JETPACK_DIR_BASENAME, core.addon.id, 'simple-storage');
-const myPrefBranch = 'extensions.' + core.addon.id + '.';
+var gWkComm;
+var gGenCssUri;
+var gCuiCssUri;
 
-var bootstrap = this;
-const NS_HTML = 'http://www.w3.org/1999/xhtml';
-const CUI_CSSURI = Services.io.newURI(core.addon.path.styles + 'cui.css', null, null);
+var windowListener = {
+	//DO NOT EDIT HERE
+	onOpenWindow: function (aXULWindow) {
+		// Wait for the window to finish loading
+		var aDOMWindow = aXULWindow.QueryInterface(Ci.nsIInterfaceRequestor).getInterface(Ci.nsIDOMWindow);
+		aDOMWindow.addEventListener('load', function () {
+			aDOMWindow.removeEventListener('load', arguments.callee, false);
+			windowListener.loadIntoWindow(aDOMWindow);
+		}, false);
+	},
+	onCloseWindow: function (aXULWindow) {},
+	onWindowTitleChange: function (aXULWindow, aNewTitle) {},
+	register: function () {
 
-// Lazy Imports
-const myServices = {};
-XPCOMUtils.defineLazyGetter(myServices, 'hph', function () { return Cc['@mozilla.org/network/protocol;1?name=http'].getService(Ci.nsIHttpProtocolHandler); });
-XPCOMUtils.defineLazyGetter(myServices, 'sb', function () { return Services.strings.createBundle(core.addon.path.locale + 'global.properties?' + Math.random()); /* Randomize URI to work around bug 719376 */ });
-
-// START - Addon Functionalities
-var myWidgetListener = {
-	onWidgetDestroyed: function(aWidgetId) {
-		if (aWidgetId != 'cui_foxspeak') {
-			return
-		}
-		console.log('my widget destoryed');
-		CustomizableUI.removeListener(myWidgetListener);
-		
-		var DOMWindows = Services.wm.getEnumerator('navigator:browser');
+		// Load into any existing windows
+		let DOMWindows = Services.wm.getEnumerator(null);
 		while (DOMWindows.hasMoreElements()) {
-			var DOMWindow = DOMWindows.getNext();
-			var DOMWindowUtils = DOMWindow.QueryInterface(Ci.nsIInterfaceRequestor).getInterface(Ci.nsIDOMWindowUtils);
-			DOMWindowUtils.removeSheet(CUI_CSSURI, DOMWindowUtils.AUTHOR_SHEET);
+			let aDOMWindow = DOMWindows.getNext();
+			if (aDOMWindow.document.readyState == 'complete') { //on startup `aDOMWindow.document.readyState` is `uninitialized`
+				windowListener.loadIntoWindow(aDOMWindow);
+			} else {
+				aDOMWindow.addEventListener('load', function () {
+					aDOMWindow.removeEventListener('load', arguments.callee, false);
+					windowListener.loadIntoWindow(aDOMWindow);
+				}, false);
+			}
 		}
-		
-		console.log('all my css styles removed from windows that had a cui, which are navigator:browser type windows');
+		// Listen to new windows
+		Services.wm.addListener(windowListener);
+	},
+	unregister: function () {
+		// Unload from any existing windows
+		let DOMWindows = Services.wm.getEnumerator(null);
+		while (DOMWindows.hasMoreElements()) {
+			let aDOMWindow = DOMWindows.getNext();
+			windowListener.unloadFromWindow(aDOMWindow);
+		}
+		/*
+		for (var u in unloaders) {
+			unloaders[u]();
+		}
+		*/
+		//Stop listening so future added windows dont get this attached
+		Services.wm.removeListener(windowListener);
+	},
+	//END - DO NOT EDIT HERE
+	loadIntoWindow: function (aDOMWindow) {
+		if (!aDOMWindow) { return }
+
+		if (aDOMWindow.gBrowser) {
+			var domWinUtils = aDOMWindow.QueryInterface(Ci.nsIInterfaceRequestor).getInterface(Ci.nsIDOMWindowUtils);
+			domWinUtils.loadSheet(gCuiCssUri, domWinUtils.AUTHOR_SHEET);
+			// domWinUtils.loadSheet(gGenCssUri, domWinUtils.AUTHOR_SHEET);
+		}
+	},
+	unloadFromWindow: function (aDOMWindow) {
+		if (!aDOMWindow) { return }
+
+		if (aDOMWindow.gBrowser) {
+			var domWinUtils = aDOMWindow.QueryInterface(Ci.nsIInterfaceRequestor).getInterface(Ci.nsIDOMWindowUtils);
+			domWinUtils.removeSheet(gCuiCssUri, domWinUtils.AUTHOR_SHEET);
+			// domWinUtils.removeSheet(gGenCssUri, domWinUtils.AUTHOR_SHEET);
+		}
 	}
 };
-// END - Addon Functionalities
 
+var gRecording;
+var gRecordingDuration;
+function cuiClick(e) {
+	if (!gRecording) {
+		var w = Services.appShell.hiddenDOMWindow;
+		w.navigator.mediaDevices.getUserMedia({
+			audio: true
+		}).then(function (stream) {
+			// do something with the stream
+			console.log('ok got stream:', stream);
+			gRecording = new w.MediaRecorder(stream);
+			gRecording.mimeType = 'audio/ogg';
+
+			gRecording.addEventListener('dataavailable', function(e) {
+				console.log('data avail, e:')
+
+				var fileReader = new w.FileReader();
+				fileReader.onload = function() {
+					var arrbuf = this.result;
+
+					gWkComm.postMessage('readRecording', arrbuf, [arrbuf], function(url, aComm) {
+						console.log('ok got url, play it');
+						var w = Services.wm.getMostRecentWindow('navigator:browser');
+						var audioEl = w.document.createElementNS('http://www.w3.org/1999/xhtml', 'audio');
+						audioEl.setAttribute('autoplay', 'true');
+						// audioEl.addEventListener('end', function() {
+						// 	console.log('audio ended');
+							// gWkComm.postMessage('releaseUrl', url)
+							// audioEl.parentNode.removeChild(audioEl);
+						// });
+						// w.document.documentElement.appendChild(audioEl);
+						audioEl.src = url;
+						w.setTimeout(function() {
+							gWkComm.postMessage('releaseUrl', url);
+						}, gRecordingDuration + 1000);
+					});
+
+					gRecording = null;
+				};
+				fileReader.readAsArrayBuffer(e.data);
+			}, false);
+
+			gRecordingDuration = Date.now();
+			gRecording.start();
+
+			console.log('recording started');
+		}, function(aReason) {
+			console.error('failed, aReason:', aReason);
+		});
+	} else {
+		console.log('recording stopped');
+		gRecordingDuration = Date.now() - gRecordingDuration;
+		gRecording.stop();
+	}
+}
+
+// bootstrap
 function install() {}
 
 function uninstall(aData, aReason) {
@@ -78,237 +178,471 @@ function uninstall(aData, aReason) {
 }
 
 function startup(aData, aReason) {
-	// core.addon.aData = aData;
-	extendCore();
-	
-	// core.addon.path.jar = 'jar:' + OS.Path.toFileURI(aData.installPath.path).replace(aData.id + '.xpi', aData.id + '.xpi!/');
-	core.addon.path.jar = 'jar:' + OS.Path.toFileURI(aData.installPath.path) + '!/';
-	core.addon.path.file = aData.installPath.path;
-	// jar:file:///C:/Users/Vayeate/AppData/Roaming/Mozilla/Firefox/Profiles/aksozfjt.Unnamed%20Profile%2010/extensions/FoxSpeak@jetpack.xpi!/
-	// path to bootstrap.js would be: `jar:file:///C:/Users/Vayeate/AppData/Roaming/Mozilla/Firefox/Profiles/aksozfjt.Unnamed%20Profile%2010/extensions/FoxSpeak@jetpack.xpi!/bootstrap.js`
-	
-	console.log('core.addon.path.jar', core.addon.path.jar);
-	
-	var promise_getMainWorker = SIPWorker('MainWorker', core.addon.path.workers + 'MainWorker.js');
-	promise_getMainWorker.then(
-		function(aVal) {
-			console.log('Fullfilled - promise_getMainWorker - ', aVal);
-			// start - do stuff here - promise_getMainWorker
-			
-				// setup custom MainWorker messages - PromiseWorker style
-				// Define a custom error prototype.
-				function MainWorkerError(errObj) {
-				  this.message = errObj.message;
-				  this.name = errObj.name;
-				}
-				MainWorkerError.fromMsg = function(msgObj) {
-				  return new MainWorkerError(msgObj);
-				};
 
-				// Register a constructor.
-				MainWorker.ExceptionHandlers['MainWorkerError'] = MainWorkerError.fromMsg;
-			
-			// end - do stuff here - promise_getMainWorker
-		},
-		function(aReason) {
-			var rejObj = {
-				name: 'promise_getMainWorker',
-				aReason: aReason
-			};
-			console.warn('Rejected - promise_getMainWorker - ', rejObj);
-		}
-	).catch(
-		function(aCaught) {
-			var rejObj = {
-				name: 'promise_getMainWorker',
-				aCaught: aCaught
-			};
-			console.error('Caught - promise_getMainWorker - ', rejObj);
-		}
-	);
-	
-	CustomizableUI.addListener(myWidgetListener);
-	CustomizableUI.createWidget({
-		id: 'cui_foxspeak',
-		defaultArea: CustomizableUI.AREA_NAVBAR,
-		label: myServices.sb.GetStringFromName('cui_foxspeak_lbl'),
-		tooltiptext: myServices.sb.GetStringFromName('cui_foxspeak_tip'),
-		onBeforeCreated: function(aDOMDocument) {
-			console.error('onBeforeCreated triggered with aDOMDocument:', aDOMDocument);
-			var DOMWindow = aDOMDocument.defaultView;
-			var DOMWindowUtils = DOMWindow.QueryInterface(Ci.nsIInterfaceRequestor).getInterface(Ci.nsIDOMWindowUtils);
-			console.log('CUI_CSSURI:', CUI_CSSURI);
-			DOMWindowUtils.loadSheet(CUI_CSSURI, DOMWindowUtils.AUTHOR_SHEET);
-			console.error('ok added my css');
-		},
-		onCommand: function(aEvent) {
-			var DOMWindow = aEvent.target.ownerDocument.defaultView;
-			
-			DOMWindow.alert('hello from foxspeak!');
-		}
+	// set preferences defaults
+
+	gWkComm = new workerComm(core.addon.path.workers + 'MainWorker.js', ()=>{return core}, function(aArg, aComm) {
+		core = aArg;
+
+		gCuiCssUri = Services.io.newURI(core.addon.path.styles + 'cui.css', null, null);
+		// gGenCssUri = Services.io.newURI(core.addon.path.styles + 'general.css', null, null);
+
+		// window listener
+		windowListener.register();
+
+		// insert cui
+		CustomizableUI.createWidget({
+			id: 'cui_foxspeak',
+			defaultArea: CustomizableUI.AREA_NAVBAR,
+			label: formatStringFromNameCore('cui_foxspeak_lbl', 'global'),
+			tooltiptext: formatStringFromNameCore('cui_foxspeak_tip', 'global'),
+			onCommand: cuiClick
+		});
+
 	});
+
+	gWkComm.postMessage('dummyForInstantInstantiate');
+
 }
 
 function shutdown(aData, aReason) {
+
 	if (aReason == APP_SHUTDOWN) { return }
-	
+
 	CustomizableUI.destroyWidget('cui_foxspeak');
+
+	windowListener.unregister();
+
+	workerComm_unregAll();
 }
 
-// start - common helper functions
-function Deferred() {
-	if (Promise && Promise.defer) {
-		//need import of Promise.jsm for example: Cu.import('resource:/gree/modules/Promise.jsm');
-		return Promise.defer();
-	} else if (PromiseUtils && PromiseUtils.defer) {
-		//need import of PromiseUtils.jsm for example: Cu.import('resource:/gree/modules/PromiseUtils.jsm');
-		return PromiseUtils.defer();
-	} else if (Promise) {
-		try {
-			/* A method to resolve the associated Promise with the value passed.
-			 * If the promise is already settled it does nothing.
-			 *
-			 * @param {anything} value : This value is used to resolve the promise
-			 * If the value is a Promise then the associated promise assumes the state
-			 * of Promise passed as value.
-			 */
-			this.resolve = null;
+// start - functions called by worker
 
-			/* A method to reject the assocaited Promise with the value passed.
-			 * If the promise is already settled it does nothing.
-			 *
-			 * @param {anything} reason: The reason for the rejection of the Promise.
-			 * Generally its an Error object. If however a Promise is passed, then the Promise
-			 * itself will be the reason for rejection no matter the state of the Promise.
-			 */
-			this.reject = null;
+// end - functions called by worker
 
-			/* A newly created Pomise object.
-			 * Initially in pending state.
-			 */
-			this.promise = new Promise(function(resolve, reject) {
-				this.resolve = resolve;
-				this.reject = reject;
-			}.bind(this));
-			Object.freeze(this);
-		} catch (ex) {
-			console.error('Promise not available!', ex);
-			throw new Error('Promise not available!');
-		}
-	} else {
-		throw new Error('Promise not available!');
-	}
+//start - common helper functions
+function formatStringFromNameCore(aLocalizableStr, aLoalizedKeyInCoreAddonL10n, aReplacements) {
+	// 051916 update - made it core.addon.l10n based
+    // formatStringFromNameCore is formating only version of the worker version of formatStringFromName, it is based on core.addon.l10n cache
+
+	// try {
+	// 	var cLocalizedStr = core.addon.l10n[aLoalizedKeyInCoreAddonL10n];
+	// } catch (ex) {
+	// 	console.error('formatStringFromNameCore error:', ex, 'args:', aLocalizableStr, aLoalizedKeyInCoreAddonL10n, aReplacements);
+	// }
+	var cLocalizedStr = core.addon.l10n[aLoalizedKeyInCoreAddonL10n][aLocalizableStr];
+	// console.log('cLocalizedStr:', cLocalizedStr, 'args:', aLocalizableStr, aLoalizedKeyInCoreAddonL10n, aReplacements);
+    if (aReplacements) {
+        for (var i=0; i<aReplacements.length; i++) {
+            cLocalizedStr = cLocalizedStr.replace('%S', aReplacements[i]);
+        }
+    }
+
+    return cLocalizedStr;
 }
 
-function SIPWorker(workerScopeName, aPath, aCore=core) {
-	// "Start and Initialize PromiseWorker"
-	// returns promise
-		// resolve value: jsBool true
-	// aCore is what you want aCore to be populated with
-	// aPath is something like `core.addon.path.content + 'modules/workers/blah-blah.js'`
-	
-	// :todo: add support and detection for regular ChromeWorker // maybe? cuz if i do then ill need to do ChromeWorker with callback
-	
-	var deferredMain_SIPWorker = new Deferred();
-
-	if (!(workerScopeName in bootstrap)) {
-		bootstrap[workerScopeName] = new PromiseWorker(aPath);
-		
-		if ('addon' in aCore && 'aData' in aCore.addon) {
-			delete aCore.addon.aData; // we delete this because it has nsIFile and other crap it, but maybe in future if I need this I can try JSON.stringify'ing it
-		}
-		
-		var promise_initWorker = bootstrap[workerScopeName].post('init', [aCore]);
-		promise_initWorker.then(
-			function(aVal) {
-				console.log('Fullfilled - promise_initWorker - ', aVal);
-				// start - do stuff here - promise_initWorker
-				deferredMain_SIPWorker.resolve(true);
-				// end - do stuff here - promise_initWorker
-			},
-			function(aReason) {
-				var rejObj = {name:'promise_initWorker', aReason:aReason};
-				console.warn('Rejected - promise_initWorker - ', rejObj);
-				deferredMain_SIPWorker.reject(rejObj);
-			}
-		).catch(
-			function(aCaught) {
-				var rejObj = {name:'promise_initWorker', aCaught:aCaught};
-				console.error('Caught - promise_initWorker - ', rejObj);
-				deferredMain_SIPWorker.reject(rejObj);
-			}
-		);
-		
-	} else {
-		deferredMain_SIPWorker.reject('Something is loaded into bootstrap[workerScopeName] already');
-	}
-	
-	return deferredMain_SIPWorker.promise;
-	
-}
-
-function aReasonMax(aReason) {
-	var deepestReason = aReason;
-	while (deepestReason.hasOwnProperty('aReason') || deepestReason.hasOwnProperty()) {
-		if (deepestReason.hasOwnProperty('aReason')) {
-			deepestReason = deepestReason.aReason;
-		} else if (deepestReason.hasOwnProperty('aCaught')) {
-			deepestReason = deepestReason.aCaught;
+//rev1 - https://gist.github.com/Noitidart/c4ab4ca10ff5861c720b
+function validateOptionsObj(aOptions, aOptionsDefaults) {
+	// ensures no invalid keys are found in aOptions, any key found in aOptions not having a key in aOptionsDefaults causes throw new Error as invalid option
+	for (var aOptKey in aOptions) {
+		if (!(aOptKey in aOptionsDefaults)) {
+			console.error('aOptKey of ' + aOptKey + ' is an invalid key, as it has no default value, aOptionsDefaults:', aOptionsDefaults, 'aOptions:', aOptions);
+			throw new Error('aOptKey of ' + aOptKey + ' is an invalid key, as it has no default value');
 		}
 	}
-	return deepestReason;
+
+	// if a key is not found in aOptions, but is found in aOptionsDefaults, it sets the key in aOptions to the default value
+	for (var aOptKey in aOptionsDefaults) {
+		if (!(aOptKey in aOptions)) {
+			aOptions[aOptKey] = aOptionsDefaults[aOptKey];
+		}
+	}
 }
 
-function extendCore() {
-	// adds some properties i use to core based on the current operating system, it needs a switch, thats why i couldnt put it into the core obj at top
-	switch (core.os.name) {
-		case 'winnt':
-		case 'winmo':
-		case 'wince':
-			core.os.version = parseFloat(Services.sysinfo.getProperty('version'));
-			// http://en.wikipedia.org/wiki/List_of_Microsoft_Windows_versions
-			if (core.os.version == 6.0) {
-				core.os.version_name = 'vista';
-			}
-			if (core.os.version >= 6.1) {
-				core.os.version_name = '7+';
-			}
-			if (core.os.version == 5.1 || core.os.version == 5.2) { // 5.2 is 64bit xp
-				core.os.version_name = 'xp';
-			}
-			break;
-			
-		case 'darwin':
-			var userAgent = myServices.hph.userAgent;
+function Deferred() { // revFinal
+	this.resolve = null;
+	this.reject = null;
+	this.promise = new Promise(function(resolve, reject) {
+		this.resolve = resolve;
+		this.reject = reject;
+	}.bind(this));
+	Object.freeze(this);
+}
+function genericReject(aPromiseName, aPromiseToReject, aReason) {
+	var rejObj = {
+		name: aPromiseName,
+		aReason: aReason
+	};
+	console.error('Rejected - ' + aPromiseName + ' - ', rejObj);
+	if (aPromiseToReject) {
+		aPromiseToReject.reject(rejObj);
+	}
+}
+function genericCatch(aPromiseName, aPromiseToReject, aCaught) {
+	var rejObj = {
+		name: aPromiseName,
+		aCaught: aCaught
+	};
+	console.error('Caught - ' + aPromiseName + ' - ', rejObj);
+	if (aPromiseToReject) {
+		aPromiseToReject.reject(rejObj);
+	}
+}
+// start - CommAPI
+// common to all of these apis
+	// whenever you use the message method, the method MUST not be a number, as if it is, then it is assumed it is a callback
+	// if you want to do a transfer of data from a callback, if transferring is supported by the api, then you must wrapp it in aComm.CallbackTransferReturn
 
-			var version_osx = userAgent.match(/Mac OS X 10\.([\d\.]+)/);
+var gBootstrap = this;
 
-			
-			if (!version_osx) {
-				throw new Error('Could not identify Mac OS X version.');
-			} else {
-				var version_osx_str = version_osx[1];
-				var ints_split = version_osx[1].split('.');
-				if (ints_split.length == 1) {
-					core.os.version = parseInt(ints_split[0]);
-				} else if (ints_split.length >= 2) {
-					core.os.version = ints_split[0] + '.' + ints_split[1];
-					if (ints_split.length > 2) {
-						core.os.version += ints_split.slice(2).join('');
+// start - CommAPI for bootstrap-framescript - bootstrap side - cross-file-link55565665464644
+// message method - transcribeMessage - it is meant to indicate nothing can be transferred, just copied/transcribed to the other process
+// first arg to transcribeMessage is a message manager, this is different from the other comm api's
+var gCrossprocComms = [];
+function crossprocComm_unregAll() {
+	var l = gCrossprocComms.length;
+	for (var i=0; i<l; i++) {
+		gCrossprocComms[i].unregister();
+	}
+}
+function crossprocComm(aChannelId) {
+	// when a new framescript creates a crossprocComm on framscript side, it requests whatever it needs on init, so i dont offer a onBeforeInit or onAfterInit on bootstrap side
+
+	var scope = gBootstrap;
+	gCrossprocComms.push(this);
+
+	this.unregister = function() {
+		Services.mm.removeMessageListener(aChannelId, this.listener);
+
+		var l = gCrossprocComms.length;
+		for (var i=0; i<l; i++) {
+			if (gCrossprocComms[i] == this) {
+				gCrossprocComms.splice(i, 1);
+				break;
+			}
+		}
+
+		// kill framescripts
+		Services.mm.broadcastAsyncMessage(aChannelId, {
+			method: 'UNINIT_FRAMESCRIPT'
+		});
+	};
+
+	this.listener = {
+		receiveMessage: function(e) {
+			var messageManager = e.target.messageManager;
+			var browser = e.target;
+			var payload = e.data;
+			console.log('bootstrap crossprocComm - incoming, payload:', payload); //, 'e:', e);
+			// console.log('this in receiveMessage bootstrap:', this);
+
+			if (payload.method) {
+				if (!(payload.method in scope)) { console.error('method of "' + payload.method + '" not in scope'); throw new Error('method of "' + payload.method + '" not in scope') }  // dev line remove on prod
+				var rez_bs_call = scope[payload.method](payload.arg, messageManager, browser, this); // only on bootstrap side, they get extra 2 args
+				if (payload.cbid) {
+					if (rez_bs_call && rez_bs_call.constructor.name == 'Promise') {
+						rez_bs_call.then(
+							function(aVal) {
+								console.log('Fullfilled - rez_bs_call - ', aVal);
+								this.transcribeMessage(messageManager, payload.cbid, aVal);
+							}.bind(this),
+							genericReject.bind(null, 'rez_bs_call', 0)
+						).catch(genericCatch.bind(null, 'rez_bs_call', 0));
+					} else {
+						console.log('calling transcribeMessage for callbck with args:', payload.cbid, rez_bs_call);
+						this.transcribeMessage(messageManager, payload.cbid, rez_bs_call);
 					}
-					core.os.version = parseFloat(core.os.version);
 				}
-				// this makes it so that 10.10.0 becomes 10.100
-				// 10.10.1 => 10.101
-				// so can compare numerically, as 10.100 is less then 10.101
-				
-				//core.os.version = 6.9; // note: debug: temporarily forcing mac to be 10.6 so we can test kqueue
+			} else if (!payload.method && payload.cbid) {
+				// its a cbid
+				this.callbackReceptacle[payload.cbid](payload.arg, messageManager, browser, this);
+				delete this.callbackReceptacle[payload.cbid];
+			} else {
+				throw new Error('invalid combination');
 			}
-			break;
-		default:
-			// nothing special
+		}.bind(this)
+	};
+	this.nextcbid = 1; //next callback id
+	this.transcribeMessage = function(aMessageManager, aMethod, aArg, aCallback) {
+		// console.log('bootstrap sending message to framescript', aMethod, aArg);
+		// aMethod is a string - the method to call in framescript
+		// aCallback is a function - optional - it will be triggered when aMethod is done calling
+
+		var cbid = null;
+		if (typeof(aMethod) == 'number') {
+			// this is a response to a callack waiting in framescript
+			cbid = aMethod;
+			aMethod = null;
+		} else {
+			if (aCallback) {
+				cbid = this.nextcbid++;
+				this.callbackReceptacle[cbid] = aCallback;
+			}
+		}
+
+		// return;
+		aMessageManager.sendAsyncMessage(aChannelId, {
+			method: aMethod,
+			arg: aArg,
+			cbid
+		});
+	};
+	this.callbackReceptacle = {};
+
+	Services.mm.addMessageListener(aChannelId, this.listener);
+}
+// start - CommAPI for bootstrap-framescript - bootstrap side - cross-file-link55565665464644
+// start - CommAPI for bootstrap-content - bootstrap side - cross-file-link0048958576532536411
+// message method - postMessage - content is in-process-content-windows, transferring works
+// there is a framescript version of this, because framescript cant get aPort1 and aPort2 so it has to create its own
+function contentComm(aContentWindow, aPort1, aPort2, onHandshakeComplete) {
+	// onHandshakeComplete is triggered when handshake is complete
+	// when a new contentWindow creates a contentComm on contentWindow side, it requests whatever it needs on init, so i dont offer a onBeforeInit. I do offer a onHandshakeComplete which is similar to onAfterInit, but not exactly the same
+	// no unregister for this really, as no listeners setup, to unregister you just need to GC everything, so just break all references to it
+
+	var handshakeComplete = false; // indicates this.postMessage will now work i think. it might work even before though as the messages might be saved till a listener is setup? i dont know i should ask
+	var scope = gBootstrap;
+
+	this.CallbackTransferReturn = function(aArg, aTransfers) {
+		// aTransfers should be an array
+		this.arg = aArg;
+		this.xfer = aTransfers;
+	};
+
+	this.listener = function(e) {
+		var payload = e.data;
+		console.log('bootstrap contentComm - incoming, payload:', payload); //, 'e:', e);
+
+		if (payload.method) {
+			if (payload.method == 'contentComm_handshake_finalized') {
+				handshakeComplete = false;
+				if (onHandshakeComplete) {
+					onHandshakeComplete(this);
+				}
+				return;
+			}
+			if (!(payload.method in scope)) { console.error('method of "' + payload.method + '" not in scope'); throw new Error('method of "' + payload.method + '" not in scope') } // dev line remove on prod
+			var rez_bs_call_for_win = scope[payload.method](payload.arg, this);
+			console.log('rez_bs_call_for_win:', rez_bs_call_for_win);
+			if (payload.cbid) {
+				if (rez_bs_call_for_win && rez_bs_call_for_win.constructor.name == 'Promise') {
+					rez_bs_call_for_win.then(
+						function(aVal) {
+							console.log('Fullfilled - rez_bs_call_for_win - ', aVal);
+							this.postMessage(payload.cbid, aVal);
+						}.bind(this),
+						genericReject.bind(null, 'rez_bs_call_for_win', 0)
+					).catch(genericCatch.bind(null, 'rez_bs_call_for_win', 0));
+				} else {
+					console.log('calling postMessage for callback with rez_bs_call_for_win:', rez_bs_call_for_win, 'this:', this);
+					this.postMessage(payload.cbid, rez_bs_call_for_win);
+				}
+			}
+		} else if (!payload.method && payload.cbid) {
+			// its a cbid
+			this.callbackReceptacle[payload.cbid](payload.arg, this);
+			delete this.callbackReceptacle[payload.cbid];
+		} else {
+			throw new Error('invalid combination');
+		}
+	}.bind(this);
+
+	this.nextcbid = 1; //next callback id
+
+	this.postMessage = function(aMethod, aArg, aTransfers, aCallback) {
+
+		// aMethod is a string - the method to call in framescript
+		// aCallback is a function - optional - it will be triggered when aMethod is done calling
+		if (aArg && aArg.constructor == this.CallbackTransferReturn) {
+			// aTransfers is undefined
+			// i needed to create CallbackTransferReturn so that callbacks can transfer data back
+			aTransfers = aArg.xfer;
+			aArg = aArg.arg;
+		}
+		var cbid = null;
+		if (typeof(aMethod) == 'number') {
+			// this is a response to a callack waiting in framescript
+			cbid = aMethod;
+			aMethod = null;
+		} else {
+			if (aCallback) {
+				cbid = this.nextcbid++;
+				this.callbackReceptacle[cbid] = aCallback;
+			}
+		}
+
+		// return;
+		aPort1.postMessage({
+			method: aMethod,
+			arg: aArg,
+			cbid
+		}, aTransfers ? aTransfers : undefined);
 	}
-	
+
+	aPort1.onmessage = this.listener;
+	this.callbackReceptacle = {};
+
+	aContentWindow.postMessage({
+		topic: 'contentComm_handshake',
+		port2: aPort2
+	}, '*', [aPort2]);
 
 }
+// end - CommAPI for bootstrap-content - bootstrap side - cross-file-link0048958576532536411
+// start - CommAPI for bootstrap-worker - bootstrap side - cross-file-link5323131347
+// message method - postMessage
+// on unregister, workers are terminated
+var gWorkerComms = [];
+function workerComm_unregAll() {
+	var l = gWorkerComms.length;
+	for (var i=0; i<l; i++) {
+		gWorkerComms[i].unregister();
+	}
+}
+function workerComm(aWorkerPath, onBeforeInit, onAfterInit, aWebWorker) {
+	// limitations:
+		// the first call is guranteed
+		// devuser should never postMessage from worker with method name "triggerOnAfterInit" - this is reserved for programtic use
+		// devuser should never postMessage from bootstrap with method name "init" - progmaticcaly this is automatically done in this.createWorker
+
+	// worker is lazy loaded, it is not created until the first call. if you want instant instantiation, call this.createWorker() with no args
+	// creates a ChromeWorker, unless aWebWorker is true
+
+	// if onBeforeInit is set
+		// if worker has `init` function
+			// it is called by bootstrap, (progrmatically, i determine this by basing the first call to the worker)
+	// if onBeforeInit is NOT set
+		// if worker has `init` function
+			// it is called by the worker before the first call to any method in the worker
+	// onAfterInit is not called if `init` function does NOT exist in the worker. it is called by worker doing postMessage to bootstrap
+
+	// onBeforeInit - args: this - it is a function, return a single var to send to init function in worker. can return CallbackTransferReturn if you want to transfer. it is run to build the data the worker should be inited with.
+	// onAfterInit - args: aArg, this - a callback that happens after init is complete. aArg is return value of init from in worker. the first call to worker will happen after onAfterInit runs in bootstrap
+	// these init features are offered because most times, workers need some data before starting off. and sometimes data is sent back to bootstrap like from init of MainWorker's
+	// no featuere for prep term, as the prep term should be done in the `self.onclose = function(event) { ... }` of the worker
+	gWorkerComms.push(this);
+
+	var worker;
+	var scope = gBootstrap;
+	this.nextcbid = 1; //next callback id
+	this.callbackReceptacle = {};
+	this.CallbackTransferReturn = function(aArg, aTransfers) {
+		// aTransfers should be an array
+		this.arg = aArg;
+		this.xfer = aTransfers;
+	};
+	this.createWorker = function(onAfterCreate) {
+		// only triggered by postMessage when `var worker` has not yet been set
+		worker = aWebWorker ? new Worker(aWorkerPath) : new ChromeWorker(aWorkerPath);
+		worker.addEventListener('message', this.listener);
+
+		if (onAfterInit) {
+			var oldOnAfterInit = onAfterInit;
+			onAfterInit = function(aArg, aComm) {
+				oldOnAfterInit(aArg, aComm);
+				if (onAfterCreate) {
+					onAfterCreate(); // link39399999
+				}
+			}
+		}
+
+		var initArg;
+		if (onBeforeInit) {
+			initArg = onBeforeInit(this);
+			this.postMessage('init', initArg); // i dont put onAfterCreate as a callback here, because i want to gurantee that the call of onAfterCreate happens after onAfterInit is triggered link39399999
+		} else {
+			// else, worker is responsible for calling init. worker will know because it keeps track in listener, what is the first postMessage, if it is not "init" then it will run init
+			if (onAfterCreate) {
+				onAfterCreate(); // as postMessage i the only one who calls this.createWorker(), onAfterCreate is the origianl postMessage intended by the devuser
+			}
+		}
+	};
+	this.postMessage = function(aMethod, aArg, aTransfers, aCallback) {
+		// aMethod is a string - the method to call in framescript
+		// aCallback is a function - optional - it will be triggered when aMethod is done calling
+
+		if (!worker) {
+			this.createWorker(this.postMessage.bind(this, aMethod, aArg, aTransfers, aCallback));
+		} else {
+			if (aArg && aArg.constructor == this.CallbackTransferReturn) {
+				// aTransfers is undefined
+				// i needed to create CallbackTransferReturn so that callbacks can transfer data back
+				aTransfers = aArg.xfer;
+				aArg = aArg.arg;
+			}
+			var cbid = null;
+			if (typeof(aMethod) == 'number') {
+				// this is a response to a callack waiting in framescript
+				cbid = aMethod;
+				aMethod = null;
+			} else {
+				if (aCallback) {
+					cbid = this.nextcbid++;
+					this.callbackReceptacle[cbid] = aCallback;
+				}
+			}
+
+			worker.postMessage({
+				method: aMethod,
+				arg: aArg,
+				cbid
+			}, aTransfers ? aTransfers : undefined);
+		}
+	};
+	this.unregister = function() {
+
+		var l = gWorkerComms.length;
+		for (var i=0; i<l; i++) {
+			if (gWorkerComms[i] == this) {
+				gWorkerComms.splice(i, 1);
+				break;
+			}
+		}
+
+		if (worker) { // because maybe it was setup, but never instantiated
+			worker.terminate();
+		}
+
+	};
+	this.listener = function(e) {
+		var payload = e.data;
+		console.log('bootstrap workerComm - incoming, payload:', payload); //, 'e:', e);
+
+		if (payload.method) {
+			if (payload.method == 'triggerOnAfterInit') {
+				if (onAfterInit) {
+					onAfterInit(payload.arg, this);
+				}
+				return;
+			}
+			if (!(payload.method in scope)) { console.error('method of "' + payload.method + '" not in scope'); throw new Error('method of "' + payload.method + '" not in scope') } // dev line remove on prod
+			var rez_bs_call_for_worker = scope[payload.method](payload.arg, this);
+			console.log('rez_bs_call_for_worker:', rez_bs_call_for_worker);
+			if (payload.cbid) {
+				if (rez_bs_call_for_worker && rez_bs_call_for_worker.constructor.name == 'Promise') {
+					rez_bs_call_for_worker.then(
+						function(aVal) {
+							console.log('Fullfilled - rez_bs_call_for_worker - ', aVal);
+							this.postMessage(payload.cbid, aVal);
+						}.bind(this),
+						genericReject.bind(null, 'rez_bs_call_for_worker', 0)
+					).catch(genericCatch.bind(null, 'rez_bs_call_for_worker', 0));
+				} else {
+					console.log('calling postMessage for callback with rez_bs_call_for_worker:', rez_bs_call_for_worker, 'this:', this);
+					this.postMessage(payload.cbid, rez_bs_call_for_worker);
+				}
+			}
+		} else if (!payload.method && payload.cbid) {
+			// its a cbid
+			this.callbackReceptacle[payload.cbid](payload.arg, this);
+			delete this.callbackReceptacle[payload.cbid];
+		} else {
+			console.error('bootstrap workerComm - invalid combination');
+			throw new Error('bootstrap workerComm - invalid combination');
+		}
+	}.bind(this);
+}
+// end - CommAPI for bootstrap-worker - bootstrap side - cross-file-link5323131347
+// end - CommAPI
+
 // end - common helper functions
